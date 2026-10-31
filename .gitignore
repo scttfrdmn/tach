@@ -9,6 +9,8 @@ coverage.*
 # Run output (tach writes these into the working directory)
 tach-*.csv
 *.summary.json
+# ...but summaries under testdata are fixtures: goldens and real-hardware captures.
+!/testdata/**/*.summary.json
 
 # Editor / OS
 .DS_Store
