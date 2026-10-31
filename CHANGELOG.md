@@ -7,14 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-31
+
+### Changed
+
+- **`busy_fraction` and `busy_fields` now count samples with sm_active >= 0.05** ("the GPU
+  had work"), not >= 0.30. Idle phases read about 0; GROMACS on an RTX 5090 runs at about 0.3
+  throughout, and the old cut split its steady work into "busy" and "idle". Readers of these
+  fields should expect higher busy fractions for low-intensity work (#63).
+
 ### Fixed
 
-- `starved` no longer says "idle most of the run" for a GPU that had work in nearly every
-  sample at low SM activity (GROMACS benchMEM on an RTX 5090 runs at sm_active ~0.3
-  throughout); it now says the kernels are too small for the GPU or it waits on the host.
-  Busy samples are those with sm_active >= 0.05, not 0.30.
-
-- `tach report` prints per-unit figures in plain decimals (`0.00002`, not `2e-05`), adds a `findings` column of finding codes to `--format csv`, keeps newlines out of markdown cells, and re-analyses only summaries without a verdict; the EC2 instance-type lookup now has a 400 ms total budget, closes its connection, and rejects an oversize or malformed response (#52).
+- `starved` says why: the GPU waits on host-device transfers (PCIe-bound); or it had work in
+  nearly every sample at low SM activity, so the kernels are too small for the GPU or it waits
+  on the host between them; or it had long idle phases. It no longer says "idle most of the
+  run" for a GPU that was working the whole time (#63).
+- A wholly idle run no longer says "the other findings describe the rest".
+- `tach report` prints per-unit figures in plain decimals (`0.00002`, not `2e-05`), adds a
+  `findings` column of finding codes to `--format csv`, keeps newlines out of markdown
+  cells, and re-analyses only summaries without a verdict (#52).
+- The EC2 instance-type lookup has a 400 ms total budget, closes its connection, and rejects
+  an oversize or malformed response (#52).
 
 ## [0.1.0] - 2026-10-31
 
