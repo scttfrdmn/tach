@@ -54,4 +54,8 @@ First version, not yet validated on real GPUs. Everything below was tested again
   once per GPU, instead of being lost.
 - **Instance type** from EC2 metadata (IMDSv2, 400 ms timeout), and a PCIe line rate inferred
   from the instance family; `--instance`, `--no-imds` and `--pcie-linerate` override.
+- **PCIe line rate from the negotiated link.** With `--pcie`, tach reads DCGM's max link gen
+  and current width (fields 235/238) and uses the slowest GPU's link (the L40S on g6e.xlarge
+  runs Gen4 x8, 15.75 GB/s, not the family's 31.5); the instance table, now Gen3 for
+  g4dn/g5g, is the fallback. The summary records `pcie_link` and `pcie_linerate_source`.
 - `tach version` prints the version, commit and build date.

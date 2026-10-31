@@ -36,6 +36,10 @@ type Summary struct {
 	EnergyNote   string  `json:"energy_note,omitempty"`
 
 	PCIeLineRateGBs float64 `json:"pcie_linerate_gbs,omitempty"`
+	// The negotiated link the line rate came from, e.g. "gen4 x8", and where
+	// the rate came from: flag | dcgm-link | instance-table.
+	PCIeLink           string `json:"pcie_link,omitempty"`
+	PCIeLineRateSource string `json:"pcie_linerate_source,omitempty"`
 
 	// Requested fields DCGM does not support on this GPU (e.g. fp64_active
 	// on an L40S). They are absent from the CSV and entity stats.

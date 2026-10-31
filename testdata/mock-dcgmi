@@ -12,6 +12,8 @@
 #   MOCK_PROF_ERROR=1   a query for profiling fields (1001-1012) errors instead of printing N/A
 #   MOCK_UNSUPPORTED=1006,...  any query that includes one of these fields fails as
 #                  DCGM 4.7 does on an L40S for fp64_active
+#   MOCK_PCIE_LINK="gen,width"  the negotiated PCIe link, fields 235-238 (default 5,16;
+#                  4,8 is the L40S on g6e.xlarge); "na" prints N/A for the link
 if [ "${MOCK_FAIL:-0}" = "1" ]; then
   echo "Error: unable to establish a connection to the specified host: localhost"
   echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
@@ -53,6 +55,8 @@ if [ "${MOCK_PROF_ERROR:-0}" = "1" ]; then
   esac
 fi
 scen="${MOCK_SCENARIO:-fp64}"
+link="${MOCK_PCIE_LINK:-5,16}"
+lgen="${link%%,*}"; lwidth="${link##*,}"
 efile="${MOCK_ENERGY:-/tmp/mock_energy}"
 val() {
   local id=$1 ent=$2
@@ -65,6 +69,11 @@ val() {
     *:1013) echo 0.00;; *:1014) echo 0.02;;
     *:1002) echo 0.85;; *:1003) echo 0.40;; *:1004) echo 0.02;; *:1005) echo 0.30;; *:1006) echo 0.20;;
     *:1007) echo 0.50;; *:1008) echo 0.00;; *:1009) echo 2.0e9;; *:1010) echo 5.0e9;;
+    # Max gen, max width, current gen, current width. Current gen = max:
+    # tach must not depend on it, as it idles down on real GPUs.
+    *:235|*:237|*:238) [ "$link" = na ] && { echo N/A; return; }
+                 if [ "$id" = 238 ]; then echo "$lwidth"; else echo "$lgen"; fi;;
+    *:236) echo 16;;
     *:155) echo 250.5;; *:100) echo 2100;; *:252) echo 6000;; *:250) echo 46068;; *:203) echo 100;; *:150) echo 55;;
     *:156) [ "${MOCK_NOENERGY:-0}" = "1" ] && { echo N/A; return; }
            [ "${MOCK_ENERGY_CLOCK:-0}" = "1" ] && { perl -MTime::HiRes=time -e 'printf "%.0f\n", time*250500'; return; }
@@ -83,7 +92,8 @@ tag() {
     1006) echo FP64A;; 1007) echo FP32A;; 1008) echo FP16A;; 1009) echo PCITX;; 1010) echo PCIRX;;
     1013) echo TIMMA;; 1014) echo THMMA;; 1015) echo TDFMA;;
     100) echo SMCLK;; 150) echo TMPTR;; 155) echo POWER;; 156) echo TOTEC;; 203) echo GPUTL;;
-    250) echo FBTTL;; 252) echo FBUSD;; *) echo "F$1";;
+    250) echo FBTTL;; 252) echo FBUSD;;
+    235) echo PCIMG;; 236) echo PCIMW;; 237) echo PCILG;; 238) echo PCILW;; *) echo "F$1";;
   esac
 }
 unit() { case $1 in 155) echo W;; 156) echo mJ;; *) echo;; esac; }
