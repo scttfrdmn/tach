@@ -5,9 +5,9 @@
 # body (goreleaser --release-notes).
 #
 # The hand-written CHANGELOG is the source of truth, not git log. Without notes
-# supplied explicitly goreleaser publishes an empty or git-log body (lith did,
-# across several releases). This script exits non-zero when the section is
-# missing so a release fails loudly instead of publishing empty.
+# supplied explicitly goreleaser publishes an empty or git-log body. This script
+# exits non-zero when the section is missing so a release fails loudly instead
+# of publishing empty.
 #
 # Usage: scripts/release-notes.sh v0.1.0 [CHANGELOG.md]
 set -euo pipefail

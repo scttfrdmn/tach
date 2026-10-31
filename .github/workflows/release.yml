@@ -68,8 +68,8 @@ jobs:
             dist/*.rpm
             dist/checksums.txt
       # Assert the published release carries the CHANGELOG section, not an
-      # empty body or goreleaser's git-log changelog (lith shipped both before
-      # this check existed).
+      # empty body or goreleaser's git-log changelog. A length check alone
+      # cannot tell those apart, so probe for the notes' first line.
       - name: verify the published body IS the CHANGELOG section
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

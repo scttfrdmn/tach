@@ -21,8 +21,8 @@ board, not in local files.
   brought into line with captured real output, not the other way round.
 - Findings thresholds in `summary.go` are heuristics. Change them only when a validation run
   shows they misfire, and name that run.
-- The summary JSON is a contract other tools read (the $/result on-prem vs cloud harness, the
-  Sanders-Brown Dorado calibration plan): add fields, don't rename them.
+- The summary JSON is a contract that `tach report`, `tach annotate` and downstream tools read:
+  add fields, don't rename them.
 - Make technical decisions from the evidence and record them in the issue or commit message.
   Bring Scott only what is his: scope changes, version numbers, tags and releases, making the
   repo public.
@@ -34,8 +34,7 @@ board, not in local files.
 
 ## Hardware runs
 
-Use spore.host `spawn` for instances: spot where available, a short TTL on every instance,
-terminate when done. Deep Learning Base GPU AMI (has DCGM); start `nv-hostengine` as root.
+Spot instances where available, a short TTL on every instance, terminate when done. Deep Learning Base GPU AMI (has DCGM); start `nv-hostengine` as root.
 Build tach on the instance or cross-compile (`make build-arm64` for g5g).
 
 ## Context

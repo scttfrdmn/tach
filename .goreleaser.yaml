@@ -75,7 +75,7 @@ signs:
 
 # No `changelog: disable: true`: release.yml passes this tag's CHANGELOG.md
 # section as --release-notes, which replaces generation. Disabling as well makes
-# goreleaser publish an empty body (lith v1.2.0-rc.1).
+# goreleaser short-circuit and publish an empty body.
 
 release:
   prerelease: auto
