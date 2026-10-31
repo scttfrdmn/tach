@@ -1,0 +1,2 @@
+dtype=fp32 size=8192 device=cuda gpu="NVIDIA GeForce RTX 5090" torch=2.15.0+cu132 cuda=13.2 allow_tf32.matmul=False allow_tf32.cudnn=False
+dtype=fp32 size=8192 iters=3543 seconds=60.017 tflops=64.908 start=1793418019.207723 end=1793418079.224480

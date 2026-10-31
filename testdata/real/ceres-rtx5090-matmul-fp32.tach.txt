@@ -1,0 +1,25 @@
+/home/scttfrdmn/tach-val/venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:377: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:82.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+
+── tach 0.1.0-dev ── triage profile, 60.9s, exit 0
+GPU 0 (62 samples)
+  sm_active      mean 0.948148   p50 0.965      p95 0.965      max 0.966
+  sm_occupancy   mean 0.118869   p50 0.121      p95 0.121      max 0.121
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0761475  p50 0.077      p95 0.078      max 0.085
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0.688639   p50 0.701      p95 0.704      max 0.713
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 568.449    p50 585.582    p95 586.869    max 588.224
+  sm_clock_mhz   mean 2153.52    p50 2130       p95 2137       max 2962
+  fb_used_mib    mean 1330.74    p50 1375       p95 1375       max 1375
+  fb_total_mib   mean 32607      p50 32607      p95 32607      max 32607
+  gpu_util_pct   mean 96.8065    p50 100        p95 100        max 100
+  gpu_temp_c     mean 72.9839    p50 74         p95 74         max 74
+energy: 35341.8 J (counter)
+verdict (heuristic): tensor cores idle; oversized memory
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Tensor pipe active 0.000 while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32.
+  - Peak memory 1.3 GiB of 31.8 GiB (4%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/tach-val/real/unknown-matmul-fp32.csv.summary.json

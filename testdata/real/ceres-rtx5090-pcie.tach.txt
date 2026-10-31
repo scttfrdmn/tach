@@ -1,0 +1,26 @@
+
+── tach 0.1.0-dev ── triage profile, 40.4s, exit 0
+GPU 0 (42 samples)
+  sm_active      mean 2.43902e-05 p50 0          p95 0          max 0.001
+  sm_occupancy   mean 0          p50 0          p95 0          max 0
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0244878  p50 0.024      p95 0.026      max 0.029
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0          p50 0          p95 0          max 0
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  pcie_tx_bps    mean 2.36352e+10 p50 1.89104e+10 p95 4.61717e+10 max 4.62981e+10
+  pcie_rx_bps    mean 2.45822e+10 p50 1.84847e+10 p95 5.03417e+10 max 5.53742e+10
+  power_w        mean 98.3615    p50 102.16     p95 102.993    max 103.167
+  sm_clock_mhz   mean 2904.62    p50 2970       p95 2970       max 2977
+  fb_used_mib    mean 1460.14    p50 1533       p95 1533       max 1533
+  fb_total_mib   mean 32607      p50 32607      p95 32607      max 32607
+  gpu_util_pct   mean 95.2381    p50 100        p95 100        max 100
+  gpu_temp_c     mean 44.9286    p50 45         p95 45         max 45
+energy: 4255.6 J (counter)
+verdict (heuristic): underutilized (PCIe-bound); oversized memory
+  - SM active averaged 0.00: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.
+  - PCIe reached 80% of line rate (p95) while SMs were idle: likely input-bound or host round-trips.
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 1.5 GiB of 31.8 GiB (5%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/tach-val/real/unknown-pcie.csv.summary.json

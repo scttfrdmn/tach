@@ -1,0 +1,24 @@
+/home/scttfrdmn/tach-val/venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:377: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:82.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+
+── tach 0.1.0-dev ── triage profile, 63.1s, exit 0
+GPU 0 (65 samples)
+  sm_active      mean 0.956063   p50 0.98       p95 0.99       max 0.99
+  sm_occupancy   mean 0.0596875  p50 0.061      p95 0.062      max 0.062
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.00779688 p50 0.008      p95 0.008      max 0.008
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0          p50 0          p95 0          max 0
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 204.743    p50 209.352    p95 212.746    max 214.024
+  sm_clock_mhz   mean 2916.32    p50 2947       p95 2962       max 2970
+  fb_used_mib    mean 2077.15    p50 2143       p95 2143       max 2143
+  fb_total_mib   mean 32607      p50 32607      p95 32607      max 32607
+  gpu_util_pct   mean 95.3846    p50 100        p95 100        max 100
+  gpu_temp_c     mean 53.9846    p50 54         p95 57         max 58
+energy: 13289.4 J (counter)
+verdict (heuristic): FP64 need unknown on this GPU; oversized memory
+  - SMs active 0.96 but no measured pipe accounts for it (all below 0.10): this GPU's counters do not show FP64 work, so FP64 need cannot be judged here. Check the code's precision before choosing hardware.
+  - Peak memory 2.1 GiB of 31.8 GiB (7%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/tach-val/real/unknown-matmul-fp64.csv.summary.json

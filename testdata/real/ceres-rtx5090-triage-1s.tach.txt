@@ -1,0 +1,25 @@
+/home/scttfrdmn/tach-val/venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:377: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:82.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+
+── tach 0.1.0-dev ── triage profile, 60.9s, exit 0
+GPU 0 (62 samples)
+  sm_active      mean 0.969705   p50 0.982      p95 0.982      max 0.982
+  sm_occupancy   mean 0.0602459  p50 0.061      p95 0.061      max 0.061
+  tensor_active  mean 0.473033   p50 0.479      p95 0.479      max 0.479
+  dram_active    mean 0.147197   p50 0.149      p95 0.15       max 0.164
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0          p50 0          p95 0          max 0
+  tensor_hmma_active mean 0.473033   p50 0.479      p95 0.479      max 0.479
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 584.402    p50 599.989    p95 600.014    max 600.35
+  sm_clock_mhz   mean 2593.63    p50 2617       p95 2640       max 2752
+  fb_used_mib    mean 959.129    p50 991        p95 991        max 991
+  fb_total_mib   mean 32607      p50 32607      p95 32607      max 32607
+  gpu_util_pct   mean 98.3871    p50 100        p95 100        max 100
+  gpu_temp_c     mean 71.1935    p50 72         p95 74         max 74
+energy: 36176.1 J (counter)
+verdict (heuristic): occupancy-limited; oversized memory
+  - SMs active (0.97) but occupancy low (0.06) and no compute pipe saturated: small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 1.0 GiB of 31.8 GiB (3%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/tach-val/real/unknown-triage-1s.csv.summary.json

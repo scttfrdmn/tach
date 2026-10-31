@@ -1,0 +1,24 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 32.3s, exit 0, g7e.2xlarge
+GPU 0 (34 samples)
+  sm_active      mean 0.886848   p50 0.98       p95 0.98       max 0.98
+  sm_occupancy   mean 0.110455   p50 0.122      p95 0.122      max 0.122
+  tensor_active  mean 0.869424   p50 0.96       p95 0.9774     max 0.978
+  dram_active    mean 0.168333   p50 0.185      p95 0.186      max 0.204
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0          p50 0          p95 0          max 0
+  tensor_hmma_active mean 0.869424   p50 0.96       p95 0.9774     max 0.978
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 538.111    p50 599.949    p95 600.584    max 600.655
+  sm_clock_mhz   mean 2125.76    p50 2152       p95 2424.8     max 2430
+  fb_used_mib    mean 950.706    p50 1042       p95 1042       max 1042
+  fb_total_mib   mean 97887      p50 97887      p95 97887      max 97887
+  gpu_util_pct   mean 87.3529    p50 99         p95 99         max 99
+  gpu_temp_c     mean 65.2353    p50 67.5       p95 70         max 71
+energy: 18333.2 J (counter)
+verdict (heuristic): oversized memory
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 1.0 GiB of 95.6 GiB (1%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g7e.2xlarge-v2-matmul-bf16.csv.summary.json
