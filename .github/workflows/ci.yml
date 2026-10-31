@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Branch CI is the shared gate — the exact set the release gate runs on a tag
+  # (vet, lint, test -race, govulncheck, e2e, fuzz, dual-arch build).
+  gate:
+    uses: ./.github/workflows/gate.yml

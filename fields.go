@@ -73,15 +73,6 @@ func profileFields(name string) ([]field, error) {
 	return append([]field(nil), p...), nil
 }
 
-func hasProf(fs []field) bool {
-	for _, f := range fs {
-		if f.Prof {
-			return true
-		}
-	}
-	return false
-}
-
 func dropProf(fs []field) []field {
 	var out []field
 	for _, f := range fs {

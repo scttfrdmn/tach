@@ -31,7 +31,13 @@ import (
 	"time"
 )
 
-const version = "0.1.0"
+// Build identity, overridden at link time (see the Makefile and
+// .goreleaser.yaml). version is recorded in every summary as tach_version.
+var (
+	version = "0.1.0-dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 var interruptSignal = os.Interrupt
 
@@ -43,7 +49,7 @@ func main() {
 		case "annotate":
 			os.Exit(cmdAnnotate(os.Args[2:]))
 		case "version", "--version":
-			fmt.Println("tach", version)
+			fmt.Printf("tach %s (commit %s, built %s)\n", version, commit, date)
 			return
 		}
 	}
@@ -150,7 +156,7 @@ func cmdRun(argv []string) int {
 	if err != nil {
 		fatalf("create %s: %v", *csvPath, err)
 	}
-	defer cf.Close()
+	defer func() { _ = cf.Close() }()
 	cw := csv.NewWriter(cf)
 	header := []string{"timestamp", "elapsed_s", "entity_type", "entity_id"}
 	for _, f := range fields {
@@ -302,44 +308,44 @@ func minDur(a, b time.Duration) time.Duration {
 }
 
 func printHuman(w *os.File, s *Summary, path string) {
-	fmt.Fprintf(w, "\n── tach %s ── %s profile, %.1fs, exit %d", version, s.Profile, s.WallSeconds, s.ExitCode)
+	_, _ = fmt.Fprintf(w, "\n── tach %s ── %s profile, %.1fs, exit %d", version, s.Profile, s.WallSeconds, s.ExitCode)
 	if s.InstanceType != "" {
-		fmt.Fprintf(w, ", %s", s.InstanceType)
+		_, _ = fmt.Fprintf(w, ", %s", s.InstanceType)
 	}
-	fmt.Fprintln(w)
+	_, _ = fmt.Fprintln(w)
 	for _, e := range s.Entities {
-		fmt.Fprintf(w, "%s %s (%d samples)\n", e.Type, e.ID, e.Samples)
+		_, _ = fmt.Fprintf(w, "%s %s (%d samples)\n", e.Type, e.ID, e.Samples)
 		for _, name := range orderedNames(e.Fields) {
 			st := e.Fields[name]
 			if st.N == 0 {
-				fmt.Fprintf(w, "  %-14s n/a (%d blank)\n", name, st.Missing)
+				_, _ = fmt.Fprintf(w, "  %-14s n/a (%d blank)\n", name, st.Missing)
 				continue
 			}
-			fmt.Fprintf(w, "  %-14s mean %-10.6g p50 %-10.6g p95 %-10.6g max %.6g\n", name, st.Mean, st.P50, st.P95, st.Max)
+			_, _ = fmt.Fprintf(w, "  %-14s mean %-10.6g p50 %-10.6g p95 %-10.6g max %.6g\n", name, st.Mean, st.P50, st.P95, st.Max)
 		}
 	}
 	if s.EnergyMethod != "none" {
-		fmt.Fprintf(w, "energy: %.1f J (%s)\n", s.EnergyJoules, s.EnergyMethod)
+		_, _ = fmt.Fprintf(w, "energy: %.1f J (%s)\n", s.EnergyJoules, s.EnergyMethod)
 	}
 	if s.PerUnit != nil {
 		unit := s.Unit
 		if unit == "" {
 			unit = "unit"
 		}
-		fmt.Fprintf(w, "per %s: %.4g s", unit, s.PerUnit.Seconds)
+		_, _ = fmt.Fprintf(w, "per %s: %.4g s", unit, s.PerUnit.Seconds)
 		if s.PerUnit.Joules > 0 {
-			fmt.Fprintf(w, ", %.4g J", s.PerUnit.Joules)
+			_, _ = fmt.Fprintf(w, ", %.4g J", s.PerUnit.Joules)
 		}
 		if s.PerUnit.Dollars > 0 {
-			fmt.Fprintf(w, ", $%.4g", s.PerUnit.Dollars)
+			_, _ = fmt.Fprintf(w, ", $%.4g", s.PerUnit.Dollars)
 		}
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w)
 	}
-	fmt.Fprintf(w, "verdict (heuristic): %s\n", s.Verdict)
+	_, _ = fmt.Fprintf(w, "verdict (heuristic): %s\n", s.Verdict)
 	for _, f := range s.Findings {
-		fmt.Fprintf(w, "  - %s\n", f.Text)
+		_, _ = fmt.Fprintf(w, "  - %s\n", f.Text)
 	}
-	fmt.Fprintf(w, "summary: %s\n", path)
+	_, _ = fmt.Fprintf(w, "summary: %s\n", path)
 }
 
 // orderedNames lists fields in a stable, readable order.

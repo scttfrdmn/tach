@@ -1,4 +1,17 @@
-/tach
+# Build artifacts
+/bin/
 /dist/
+/tach
+*.test
+*.out
+coverage.*
+
+# Run output (tach writes these into the working directory)
 tach-*.csv
 *.summary.json
+
+# Editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/

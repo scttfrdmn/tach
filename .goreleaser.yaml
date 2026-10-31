@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: Apache-2.0
+version: 2
+
+project_name: tach
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: tach
+    main: .
+    binary: tach
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .ShortCommit }}
+      - -X main.date={{ .Date }}
+
+archives:
+  # Versioned tar.gz archives (the durable, reproducible artifact).
+  - id: tach
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  # Stable-name raw binaries so a copy-pasteable one-liner works unchanged
+  # across releases (curl -L .../tach_linux_amd64 -o tach).
+  - id: tach-binary
+    formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+# Linux packages (.deb / .rpm) from the SAME binaries as the archives.
+nfpms:
+  - id: tach
+    package_name: tach
+    ids: [tach]
+    formats: [deb, rpm]
+    maintainer: "Scott Friedman <scttfrdmn@users.noreply.github.com>"
+    description: "Wraps a command and records GPU utilization, efficiency, energy and cost per unit through NVIDIA DCGM."
+    homepage: "https://github.com/scttfrdmn/tach"
+    license: "Apache-2.0"
+    bindir: /usr/bin
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# An SBOM per archive and per package, via syft (installed in release.yml).
+sboms:
+  - id: archives
+    artifacts: archive
+  - id: packages
+    artifacts: package
+
+# Keyless cosign signature over checksums.txt, which transitively covers every
+# artifact via its listed sha256. cosign v3 emits a Sigstore bundle.
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.bundle"
+    args:
+      - sign-blob
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
+    output: true
+
+# No `changelog: disable: true`: release.yml passes this tag's CHANGELOG.md
+# section as --release-notes, which replaces generation. Disabling as well makes
+# goreleaser short-circuit and publish an empty body.
+
+release:
+  prerelease: auto
