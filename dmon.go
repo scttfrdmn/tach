@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -167,6 +168,10 @@ func startSampler(bin string, fields []field, interval time.Duration, entities s
 	}
 	s := &sampler{cmd: cmd, done: make(chan struct{})}
 	cmd.Stderr = &s.stderr
+	// Its own process group, so a Ctrl-C meant for the wrapped command does
+	// not stop sampling while that command shuts down. tach stops it in
+	// stop(); if tach dies first, dmon exits on its next write to the pipe.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("start dcgmi dmon: %w", err)
 	}
@@ -183,15 +188,21 @@ func startSampler(bin string, fields []field, interval time.Duration, entities s
 	return s, nil
 }
 
-// stop interrupts dmon and waits for the reader to drain.
+// stop interrupts dmon's process group and waits for the reader to drain.
+// The group, not just the pid: a dcgmi wrapper script (or anything dmon
+// spawns) gets the signal too, instead of waiting out the kill timeout.
 func (s *sampler) stop() {
 	if s.cmd.Process != nil {
-		_ = s.cmd.Process.Signal(interruptSignal)
+		if sig, ok := interruptSignal.(syscall.Signal); ok {
+			_ = syscall.Kill(-s.cmd.Process.Pid, sig)
+		} else {
+			_ = s.cmd.Process.Signal(interruptSignal)
+		}
 	}
 	select {
 	case <-s.done:
 	case <-time.After(3 * time.Second):
-		_ = s.cmd.Process.Kill()
+		_ = syscall.Kill(-s.cmd.Process.Pid, syscall.SIGKILL)
 		<-s.done
 	}
 	_ = s.cmd.Wait()
