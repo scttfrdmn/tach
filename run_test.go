@@ -24,34 +24,57 @@ import (
 // coverage. Paths that end in os.Exit (flag errors, a missing dcgmi) and the
 // commands that print to stdout re-exec this test binary as tach.
 
+// sharedMock is one wrapper script around testdata/mock-dcgmi, written before
+// any test runs. Each test points tach at a symlink to it in its own
+// directory, next to an "env" file the wrapper sources.
+//
+// Tests must not write executables while others run: a process forked by a
+// parallel test can inherit the still-open write descriptor, and exec of the
+// new script then fails with ETXTBSY ("text file busy"). That surfaced as an
+// intermittent dcp:false — the profiling probe failed, the device probe
+// succeeded.
+var sharedMock string
+
 func TestMain(m *testing.M) {
 	if os.Getenv("TACH_TEST_MAIN") == "1" {
 		main()
 		os.Exit(0)
 	}
-	os.Exit(m.Run())
-}
-
-// mockDcgmi writes a per-test wrapper around testdata/mock-dcgmi that sets the
-// mock's environment. Parallel tests cannot share process environment, and
-// each needs its own energy counter state.
-func mockDcgmi(t *testing.T, env ...string) string {
-	t.Helper()
+	dir, err := os.MkdirTemp("", "tach-mock")
+	if err != nil {
+		panic(err)
+	}
 	mock, err := filepath.Abs("testdata/mock-dcgmi")
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
+	sharedMock = filepath.Join(dir, "dcgmi")
+	script := "#!/bin/sh\n. \"$(dirname \"$0\")/env\"\nexec " + fmt.Sprintf("%q", mock) + " \"$@\"\n"
+	if err := os.WriteFile(sharedMock, []byte(script), 0o755); err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	_ = os.RemoveAll(dir)
+	os.Exit(code)
+}
+
+// mockDcgmi returns a per-test dcgmi path: a symlink to sharedMock beside an
+// env file holding the mock's settings and the test's own energy counter
+// state. Parallel tests cannot share process environment.
+func mockDcgmi(t *testing.T, env ...string) string {
+	t.Helper()
 	dir := t.TempDir()
 	var b strings.Builder
-	b.WriteString("#!/bin/sh\n")
 	fmt.Fprintf(&b, "MOCK_ENERGY=%q; export MOCK_ENERGY\n", filepath.Join(dir, "energy"))
 	for _, kv := range env {
 		k, v, _ := strings.Cut(kv, "=")
 		fmt.Fprintf(&b, "%s=%q; export %s\n", k, v, k)
 	}
-	fmt.Fprintf(&b, "exec %q \"$@\"\n", mock)
+	if err := os.WriteFile(filepath.Join(dir, "env"), []byte(b.String()), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	path := filepath.Join(dir, "dcgmi")
-	if err := os.WriteFile(path, []byte(b.String()), 0o755); err != nil {
+	if err := os.Symlink(sharedMock, path); err != nil {
 		t.Fatal(err)
 	}
 	return path
