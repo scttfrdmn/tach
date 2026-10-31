@@ -1,0 +1,8 @@
+dtype=bf16 size=4096 device=cuda gpu="NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=4096 device=cuda gpu="NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=4096 device=cuda gpu="NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=4096 device=cuda gpu="NVIDIA RTX PRO 6000 Blackwell Server Edition MIG 1g.24gb" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=4096 iters=14449 seconds=40.002 tflops=49.644 start=1793413299.614941 end=1793413339.616759
+dtype=bf16 size=4096 iters=16555 seconds=40.002 tflops=56.880 start=1793413299.630263 end=1793413339.631963
+dtype=bf16 size=4096 iters=16600 seconds=40.002 tflops=57.034 start=1793413299.630385 end=1793413339.632308
+dtype=bf16 size=4096 iters=14284 seconds=40.003 tflops=49.076 start=1793413299.657930 end=1793413339.660580

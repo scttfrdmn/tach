@@ -1,0 +1,67 @@
+### nvidia-smi -L
+GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9)
+  MIG 1g.24gb     Device  0: (UUID: MIG-0292e1c0-d915-57ab-90f7-9c1d65d5ef5a)
+  MIG 1g.24gb     Device  1: (UUID: MIG-96234d1d-8dba-5537-87e0-0a6a339a5e25)
+  MIG 1g.24gb     Device  2: (UUID: MIG-19558d98-5307-551c-a96f-5cd168d7290d)
+  MIG 1g.24gb     Device  3: (UUID: MIG-3020a666-b427-5fa9-9de0-a4ee6b2172f4)
+### dcgmi discovery -c
++-------------------+--------------------------------------------------------------------+
+| Instance Hierarchy                                                                     |
++===================+====================================================================+
+| GPU 0             | GPU GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9 (EntityID: 0)         |
+| -> I 0/3          | GPU Instance (EntityID: 0)                                         |
+|    -> CI 0/3/0    | Compute Instance (EntityID: 0)                                     |
+| -> I 0/4          | GPU Instance (EntityID: 1)                                         |
+|    -> CI 0/4/0    | Compute Instance (EntityID: 1)                                     |
+| -> I 0/5          | GPU Instance (EntityID: 2)                                         |
+|    -> CI 0/5/0    | Compute Instance (EntityID: 2)                                     |
+| -> I 0/6          | GPU Instance (EntityID: 3)                                         |
+|    -> CI 0/6/0    | Compute Instance (EntityID: 3)                                     |
++-------------------+--------------------------------------------------------------------+
+### dcgmi dmon -i i:0,i:1 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         N/A          30.864            704224896               N/A               
+GPU-I 1         N/A          30.864            704224896               N/A               
+GPU-I 0         0.000        30.860            704224896               N/A               
+GPU-I 1         0.000        30.860            704275889               N/A               
+GPU-I 0         0.000        40.592            704275889               N/A               
+GPU-I 1         0.000        40.592            704275889               N/A               
+exit=0
+### dcgmi dmon -i 0/* -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         0.000        40.592            704323313               N/A               
+GPU-I 1         0.000        40.592            704323313               N/A               
+GPU-I 2         N/A          50.578            704333707               N/A               
+GPU-I 3         N/A          50.578            704333707               N/A               
+GPU-I 0         0.000        50.578            704366380               N/A               
+GPU-I 1         0.000        50.578            704366380               N/A               
+GPU-I 2         0.000        49.347            704381477               N/A               
+GPU-I 3         0.000        49.347            704333707               N/A               
+GPU-I 0         0.000        49.347            704415598               N/A               
+GPU-I 1         0.000        49.347            704415598               N/A               
+GPU-I 2         0.000        49.123            704381477               N/A               
+GPU-I 3         0.000        49.123            704381477               N/A               
+exit=0
+### dcgmi dmon -i i:0 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         0.000        34.835            704415598               N/A               
+GPU-I 0         0.000        30.871            704450814               N/A               
+GPU-I 0         0.000        30.864            704481152               N/A               
+exit=0
+### dcgmi dmon -i instance:1 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 1         0.000        30.864            704502608               N/A               
+GPU-I 1         0.000        30.863            704502608               N/A               
+GPU-I 1         0.000        30.629            704532258               N/A               
+exit=0
+### dcgmi dmon -i 0 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU 0           N/A          30.629            704564970               N/A               
+GPU 0           0.000        30.137            704564970               N/A               
+GPU 0           0.000        29.903            704595407               N/A               
+exit=0

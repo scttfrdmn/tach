@@ -1,0 +1,9 @@
+
+### stdbuf -oL dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 -c 5 | timestamper
+### at 2026-10-31T02:04:05.384407519Z
+start 1793412245.387078113
+1793412245.395775071 #Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+1793412245.399356617 ID                                                                                                                    W                 mJ                     
+1793412245.402818820 Error setting watches. Result: -6: Feature not supported
+1793412245.406215241 
+end 1793412245.409792887 exit=250

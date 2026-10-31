@@ -1,0 +1,63 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 42.4s, exit 0, g7e.2xlarge
+GPU-I 0 (44 samples)
+  sm_active      mean 0.838841   p50 0.923      p95 0.92385    max 0.925
+  sm_occupancy   mean 0.104523   p50 0.115      p95 0.115      max 0.115
+  tensor_active  mean 0.400795   p50 0.443      p95 0.444      max 0.444
+  dram_active    mean 0.138205   p50 0.152      p95 0.153      max 0.169
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 552.239    p50 600.013    p95 600.123    max 610.463
+  sm_clock_mhz   mean 2178.5     p50 2272       p95 2315.95    max 2422
+  fb_used_mib    mean 396.591    p50 421        p95 421        max 421
+  fb_total_mib   mean 24192      p50 24192      p95 24192      max 24192
+  gpu_util_pct   n/a (44 blank)
+  gpu_temp_c     mean 53.2273    p50 55.5       p95 62         max 62
+GPU-I 1 (44 samples)
+  sm_active      mean 0.895864   p50 0.986      p95 0.986      max 0.986
+  sm_occupancy   mean 0.11175    p50 0.123      p95 0.123      max 0.123
+  tensor_active  mean 0.493545   p50 0.546      p95 0.547      max 0.548
+  dram_active    mean 0          p50 0          p95 0          max 0
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 552.237    p50 600.006    p95 600.123    max 610.463
+  sm_clock_mhz   mean 2178.5     p50 2272       p95 2315.95    max 2422
+  fb_used_mib    mean 396.591    p50 421        p95 421        max 421
+  fb_total_mib   mean 24192      p50 24192      p95 24192      max 24192
+  gpu_util_pct   n/a (44 blank)
+  gpu_temp_c     mean 53.2273    p50 55.5       p95 62         max 62
+GPU-I 2 (44 samples)
+  sm_active      mean 0.836909   p50 0.923      p95 0.924      max 0.924
+  sm_occupancy   mean 0.10425    p50 0.115      p95 0.115      max 0.115
+  tensor_active  mean 0.462068   p50 0.512      p95 0.514      max 0.514
+  dram_active    mean 0          p50 0          p95 0          max 0
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 552.239    p50 600.013    p95 600.123    max 610.463
+  sm_clock_mhz   mean 2178.5     p50 2272       p95 2315.95    max 2422
+  fb_used_mib    mean 396.591    p50 421        p95 421        max 421
+  fb_total_mib   mean 24192      p50 24192      p95 24192      max 24192
+  gpu_util_pct   n/a (44 blank)
+  gpu_temp_c     mean 53.2273    p50 55.5       p95 62         max 62
+GPU-I 3 (44 samples)
+  sm_active      mean 0.896068   p50 0.987      p95 0.987      max 0.987
+  sm_occupancy   mean 0.111705   p50 0.123      p95 0.123      max 0.123
+  tensor_active  mean 0.431636   p50 0.477      p95 0.479      max 0.479
+  dram_active    mean 0.160068   p50 0.176      p95 0.178      max 0.196
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 552.238    p50 600.006    p95 600.123    max 610.463
+  sm_clock_mhz   mean 2178.5     p50 2272       p95 2315.95    max 2422
+  fb_used_mib    mean 396.591    p50 421        p95 421        max 421
+  fb_total_mib   mean 24192      p50 24192      p95 24192      max 24192
+  gpu_util_pct   n/a (44 blank)
+  gpu_temp_c     mean 53.2273    p50 55.5       p95 62         max 62
+verdict (heuristic): occupancy-limited; oversized memory
+  - SMs active (0.87) but occupancy low (0.11): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).
+  - FP64 pipe active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 0.4 GiB of 23.6 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g7e.2xlarge-mig-4x.csv.summary.json

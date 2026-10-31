@@ -1,0 +1,2 @@
+dtype=bf16 size=8192 device=cuda gpu="NVIDIA L40S" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=8192 iters=8971 seconds=60.006 tflops=164.379 start=1793412786.680242 end=1793412846.686061

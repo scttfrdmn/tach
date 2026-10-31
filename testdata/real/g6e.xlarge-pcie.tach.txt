@@ -1,0 +1,21 @@
+tach: DCGM on this GPU does not support fp64_active; not recorded, and findings that need it are skipped.
+
+── tach 0.1.0-dev ── triage profile, 41.3s, exit 0, g6e.xlarge
+GPU 0 (43 samples)
+  sm_active      mean 0          p50 0          p95 0          max 0
+  sm_occupancy   mean 0          p50 0          p95 0          max 0
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0171628  p50 0.018      p95 0.018      max 0.018
+  pcie_tx_bps    mean 8.04495e+09 p50 1.6845e+09 p95 1.48669e+10 max 1.48669e+10
+  pcie_rx_bps    mean 7.04998e+09 p50 5.10429e+07 p95 1.51527e+10 max 1.51528e+10
+  power_w        mean 88.0856    p50 88.506     p95 89.0235    max 89.096
+  sm_clock_mhz   mean 2040       p50 2040       p95 2040       max 2040
+  fb_used_mib    mean 1392.09    p50 1460       p95 1460       max 1460
+  fb_total_mib   mean 46068      p50 46068      p95 46068      max 46068
+  gpu_util_pct   mean 93.0698    p50 100        p95 100        max 100
+  gpu_temp_c     mean 42.1163    p50 43         p95 43         max 43
+energy: 3788.2 J (counter)
+verdict (heuristic): underutilized; oversized memory
+  - SM active averaged 0.00: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.
+  - Peak memory 1.4 GiB of 45.0 GiB (3%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g6e.xlarge-pcie.csv.summary.json

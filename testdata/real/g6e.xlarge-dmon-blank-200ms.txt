@@ -1,0 +1,12 @@
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006 -d 200 -c 150   (load: /opt/pytorch/bin/python /home/scttfrdmn/hw/matmul.py  --dtype bf16 --seconds 90)
+### at 2026-10-31T02:04:23.997338909Z
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        
+ID                                                                               
+Error setting watches. Result: -6: Feature not supported
+
+exit=250
+
+### N/A per column
+### at 2026-10-31T02:04:24.007935596Z
+rows=0
