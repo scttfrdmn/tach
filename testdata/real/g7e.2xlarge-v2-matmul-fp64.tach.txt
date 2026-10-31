@@ -1,0 +1,25 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 154.5s, exit 0, g7e.2xlarge
+GPU 0 (156 samples)
+  sm_active      mean 0.208419   p50 0          p95 0.993      max 0.994
+  sm_occupancy   mean 0.0130645  p50 0          p95 0.062      max 0.062
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.00149032 p50 0          p95 0.007      max 0.007
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0          p50 0          p95 0          max 0
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 67.2884    p50 29.4085    p95 156.171    max 156.741
+  sm_clock_mhz   mean 1117.96    p50 180        p95 2370       max 2370
+  fb_used_mib    mean 906.59     p50 0          p95 2194       max 2194
+  fb_total_mib   mean 97887      p50 97887      p95 97887      max 97887
+  gpu_util_pct   mean 21.1538    p50 0          p95 100        max 100
+  gpu_temp_c     mean 27.1923    p50 24         p95 34         max 35
+energy: 10492.6 J (counter)
+verdict (heuristic): underutilized; oversized memory
+  - SM active averaged 0.21: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 2.1 GiB of 95.6 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g7e.2xlarge-v2-matmul-fp64.csv.summary.json

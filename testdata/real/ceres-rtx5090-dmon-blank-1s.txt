@@ -1,0 +1,55 @@
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006 -d 1000 -c 30   (load: /home/scttfrdmn/tach-val/venv/bin/python /home/scttfrdmn/tach-val/hw/matmul.py  --dtype bf16 --seconds 90)
+### at 2026-10-31T03:34:59.345912018Z
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        
+ID                                                                               
+GPU 0           N/A          N/A          N/A          N/A          N/A          
+GPU 0           0.980        0.061        0.478        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.152        0.000        
+GPU 0           0.982        0.061        0.479        0.152        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.478        0.151        0.000        
+GPU 0           0.982        0.061        0.480        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        
+ID                                                                               
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.151        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        
+ID                                                                               
+GPU 0           0.982        0.061        0.479        0.150        0.000        
+exit=0
+
+### N/A per column
+### at 2026-10-31T03:35:28.365221393Z
+rows=30
+SMACT N/A=1 (3.3%)
+SMOCC N/A=1 (3.3%)
+TENSO N/A=1 (3.3%)
+DRAMA N/A=1 (3.3%)
+FP64A N/A=1 (3.3%)
+
+### load output
+### at 2026-10-31T03:35:58.301888747Z
+/home/scttfrdmn/tach-val/venv/lib/python3.13/site-packages/torch/_subclasses/functional_tensor.py:377: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:82.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+dtype=bf16 size=8192 device=cuda gpu="NVIDIA GeForce RTX 5090" torch=2.15.0+cu132 cuda=13.2 allow_tf32.matmul=False allow_tf32.cudnn=True

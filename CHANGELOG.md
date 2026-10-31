@@ -37,7 +37,7 @@ First version, not yet validated on real GPUs. Everything below was tested again
   `memory_headroom`, `no_dcp`, `no_samples`. FP64 activity includes FP64 on tensor cores
   (measured on H100: DGEMM shows only as tensor activity no hmma/imma counter claims), and
   `low_occupancy` is not reported for saturated GEMMs. Thresholds were checked against
-  FP32/BF16/FP64 matmul runs on H100, RTX PRO 6000 and L40S.
+  FP32/BF16/FP64 matmul runs on H100, RTX PRO 6000, L40S and GeForce RTX 5090.
 - **Per-unit figures** with `--work`, `--unit` and `--price-per-hour`: seconds, joules and
   dollars per unit. `tach annotate` adds them to an existing summary after the run.
 - **`tach report`** compares runs as a Markdown or CSV table, sorted by cost per unit, then

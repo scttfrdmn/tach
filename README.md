@@ -13,7 +13,7 @@ One static Go binary, standard library only. It shells out to `dcgmi`, so there 
 ## Requirements
 
 - `dcgmi` on `PATH` (installed with DCGM; present on the AWS Deep Learning AMIs).
-- For profiling fields: a datacenter GPU and `nv-hostengine` running as root (`sudo systemctl --now enable nvidia-dcgm`). Without them tach records device-level fields only and says so. If `dcgmi` cannot read the GPUs at all (usually `nv-hostengine` not running), tach stops before starting the command and prints dcgmi's error.
+- For profiling fields: `nv-hostengine` running (`sudo systemctl --now enable nvidia-dcgm`) on a GPU DCGM profiles. With DCGM 4.7 that was every GPU measured: H100, RTX PRO 6000, L40S and a GeForce RTX 5090, with the service running as its own `nvidia-dcgm` account. Where profiling is unavailable tach records device-level fields only and says so. If `dcgmi` cannot read the GPUs at all (usually `nv-hostengine` not running), tach stops before starting the command and prints dcgmi's error.
 
 ## Build
 
@@ -56,7 +56,7 @@ FP64 activity is `fp64_active` plus FP64 on tensor cores, estimated as `tensor_a
 | --- | --- | --- |
 | `starved` | sm_active < 0.30 | GPU mostly idle; check data loading and host-side work first |
 | `pcie_bound` | starved and PCIe p95 ≥ 60% of line rate | Input-bound or host-device round-trips |
-| `low_occupancy` | sm_active ≥ 0.50, sm_occupancy < 0.25, no pipe ≥ 0.50 | Small kernels or batches; batch up or share the GPU (MPS/MIG). Not reported for saturated GEMMs, which run few warps per SM by design |
+| `low_occupancy` | sm_active ≥ 0.50, sm_occupancy < 0.25, no pipe ≥ 0.40 | Small kernels or batches; batch up or share the GPU (MPS/MIG). Not reported for saturated GEMMs, which run few warps per SM by design |
 | `memory_bound` | dram_active ≥ 0.50, all pipes < 0.30 | Choose on memory bandwidth, not FLOPs |
 | `fp64_required` | FP64 activity ≥ 0.05 | Needs 1:2 FP64 (A100, H100/H200, B200) |
 | `fp64_unused` | FP64 activity < 0.01, and FP64 is measurable on this GPU | No FP64-class GPU needed |

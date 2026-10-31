@@ -1,0 +1,8 @@
+
+### dcgmi dmon -e 1009,1010 -c 3
+### at 2026-10-31T03:35:58.303151080Z
+#Entity         PCITX                       PCIRX                       
+ID                                                                      
+GPU 0           N/A                         N/A                         
+GPU 0           1925039                     1377546                     
+GPU 0           241089                      7861                        

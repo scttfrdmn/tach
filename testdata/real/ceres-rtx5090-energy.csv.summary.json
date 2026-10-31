@@ -1,0 +1,173 @@
+{
+  "tach_version": "0.1.0-dev",
+  "label": "unknown-energy",
+  "profile": "triage",
+  "command": [
+    "/home/scttfrdmn/tach-val/venv/bin/python",
+    "/home/scttfrdmn/tach-val/hw/matmul.py",
+    "--dtype",
+    "bf16",
+    "--seconds",
+    "180"
+  ],
+  "exit_code": 0,
+  "start": "2026-10-31T03:37:15Z",
+  "wall_seconds": 180.862748589,
+  "interval_ms": 1000,
+  "dcp": true,
+  "hostname": "ceres",
+  "csv": "/home/scttfrdmn/tach-val/real/unknown-energy.csv",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 182,
+      "fields": {
+        "dram_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0.14849171270718195,
+          "p50": 0.149,
+          "p95": 0.15,
+          "min": 0.05,
+          "max": 0.151
+        },
+        "fb_total_mib": {
+          "n": 182,
+          "missing": 0,
+          "mean": 32607,
+          "p50": 32607,
+          "p95": 32607,
+          "min": 32607,
+          "max": 32607
+        },
+        "fb_used_mib": {
+          "n": 182,
+          "missing": 0,
+          "mean": 980.1428571428571,
+          "p50": 991,
+          "p95": 991,
+          "min": 3,
+          "max": 991
+        },
+        "fp32_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "fp64_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 182,
+          "missing": 0,
+          "mean": 72.17582417582418,
+          "p50": 73,
+          "p95": 74,
+          "min": 45,
+          "max": 74
+        },
+        "gpu_util_pct": {
+          "n": 182,
+          "missing": 0,
+          "mean": 98.91758241758242,
+          "p50": 100,
+          "p95": 100,
+          "min": 0,
+          "max": 100
+        },
+        "power_w": {
+          "n": 182,
+          "missing": 0,
+          "mean": 594.0210934065936,
+          "p50": 599.988,
+          "p95": 600.01595,
+          "min": 56.824,
+          "max": 600.043
+        },
+        "sm_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0.9782430939226514,
+          "p50": 0.982,
+          "p95": 0.982,
+          "min": 0.552,
+          "max": 0.982
+        },
+        "sm_clock_mhz": {
+          "n": 182,
+          "missing": 0,
+          "mean": 2613.153846153846,
+          "p50": 2617,
+          "p95": 2640,
+          "min": 720,
+          "max": 2970
+        },
+        "sm_occupancy": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0.060773480662983374,
+          "p50": 0.061,
+          "p95": 0.061,
+          "min": 0.035,
+          "max": 0.061
+        },
+        "tensor_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0.4771823204419883,
+          "p50": 0.479,
+          "p95": 0.479,
+          "min": 0.271,
+          "max": 0.479
+        },
+        "tensor_hmma_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0.4771823204419883,
+          "p50": 0.479,
+          "p95": 0.479,
+          "min": 0.271,
+          "max": 0.479
+        },
+        "tensor_imma_active": {
+          "n": 181,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      }
+    }
+  ],
+  "energy_joules": 108179.548,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "findings": [
+    {
+      "code": "low_occupancy",
+      "text": "SMs active (0.98) but occupancy low (0.06) and no compute pipe saturated: small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG)."
+    },
+    {
+      "code": "fp64_unused",
+      "text": "FP64 active 0.000: the code does not need an FP64-class GPU."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 1.0 GiB of 31.8 GiB (3%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "occupancy-limited; oversized memory"
+}
