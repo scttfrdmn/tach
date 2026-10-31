@@ -40,7 +40,8 @@ First version, not yet validated on real GPUs. Everything below was tested again
   time per unit, then wall time. It refuses runs that measure different units rather than compare
   unlike quantities.
 - **MIG instances** through `--entities` (passed to `dcgmi -i`); energy and PCIe stay
-  whole-GPU.
+  whole-GPU. With instance-only entities the energy counter is read from the parent GPU(s),
+  once per GPU, instead of being lost.
 - **Instance type** from EC2 metadata (IMDSv2, 400 ms timeout), and a PCIe line rate inferred
   from the instance family; `--instance`, `--no-imds` and `--pcie-linerate` override.
 - `tach version` prints the version, commit and build date.

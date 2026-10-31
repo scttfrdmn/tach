@@ -180,7 +180,7 @@ func cmdRun(argv []string) int {
 	_ = cw.Write(header)
 	cw.Flush()
 
-	energyStart, energyErr := readEnergy(*dcgmiBin, *entities)
+	energyStart, energyViaParents, energyErr := readEnergy(*dcgmiBin, *entities)
 
 	var mu sync.Mutex
 	data := map[string]*series{}
@@ -272,7 +272,7 @@ func cmdRun(argv []string) int {
 		sum.Notes = append(sum.Notes, "no samples recorded: "+why)
 	}
 
-	energyEnd, err2 := readEnergy(*dcgmiBin, *entities)
+	energyEnd, _, err2 := readEnergy(*dcgmiBin, *entities)
 	switch {
 	case energyErr == nil && err2 == nil:
 		j := 0.0
@@ -283,6 +283,9 @@ func cmdRun(argv []string) int {
 		}
 		sum.EnergyJoules, sum.EnergyMethod = j, "counter"
 		sum.EnergyNote = "whole-GPU energy counter delta; includes any other work on these GPUs"
+		if energyViaParents {
+			sum.EnergyNote = "MIG instances have no energy counter of their own: whole-GPU counter delta of the GPU(s) hosting them; includes the other instances and any other work on those GPUs"
+		}
 	default:
 		j, ok := powerIntegral(fields, data)
 		if ok {

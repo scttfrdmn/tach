@@ -292,23 +292,29 @@ func TestRunEnergyFallsBackToPowerIntegral(t *testing.T) {
 	}
 }
 
-func TestRunMIGEntities(t *testing.T) {
-	t.Parallel()
-	r := runTach(t, []string{"MOCK_MIG=1"}, "--entities", "i:0,i:1", "--", "sleep", "1.1")
-	s := r.sum
+func entityOrder(s *Summary) string {
 	var order []string
 	for _, e := range s.Entities {
 		order = append(order, e.Type+" "+e.ID)
 	}
-	if strings.Join(order, ",") != "GPU 0,GPU-I 0,GPU-I 1" {
-		t.Fatalf("entity order %v", order)
+	return strings.Join(order, ",")
+}
+
+// TestRunMIGEntities measures MIG instances only, as `--entities i:0,i:1` does
+// on real hardware (#14): GPU-I rows only, and energy from the parent GPU
+// (#48), read once, not summed over the instances that repeat its counter.
+func TestRunMIGEntities(t *testing.T) {
+	t.Parallel()
+	r := runTach(t, []string{"MOCK_MIG=1"}, "--entities", "i:0,i:1", "--", "sleep", "1.1")
+	s := r.sum
+	if got := entityOrder(s); got != "GPU-I 0,GPU-I 1" {
+		t.Fatalf("entity order %v", got)
 	}
 	if st := entity(t, s, "GPU-I", "1").Fields["sm_active"]; st.N == 0 || st.Mean != 0.85 {
 		t.Fatalf("per-instance sm_active %+v", st)
 	}
-	// Energy is whole-GPU: the instance rows' N/A counter is ignored.
-	if s.EnergyMethod != "counter" || s.EnergyJoules != 500 {
-		t.Fatalf("energy %v %s", s.EnergyJoules, s.EnergyMethod)
+	if s.EnergyMethod != "counter" || s.EnergyJoules != 500 || !strings.Contains(s.EnergyNote, "hosting them") {
+		t.Fatalf("energy %v %s %q", s.EnergyJoules, s.EnergyMethod, s.EnergyNote)
 	}
 	n := 0
 	for _, row := range r.rows {
@@ -565,5 +571,34 @@ func TestRunDropsUnsupportedField(t *testing.T) {
 	}
 	if len(s.Notes) != 1 || !strings.Contains(s.Notes[0], "fp64_active") {
 		t.Fatalf("notes %q", s.Notes)
+	}
+}
+
+// TestRunMIGWholeGPUAndInstances: with no --entities in MIG mode, dcgmi gives
+// the GPU and its instances; energy comes from the GPU row directly.
+func TestRunMIGWholeGPUAndInstances(t *testing.T) {
+	t.Parallel()
+	s := runTach(t, []string{"MOCK_MIG=1"}, "--", "sleep", "1.1").sum
+	if got := entityOrder(s); got != "GPU 0,GPU-I 0,GPU-I 1" {
+		t.Fatalf("entity order %v", got)
+	}
+	if s.EnergyJoules != 500 || strings.Contains(s.EnergyNote, "hosting them") {
+		t.Fatalf("energy %v %q", s.EnergyJoules, s.EnergyNote)
+	}
+}
+
+func TestMigParentsFromRealCapture(t *testing.T) {
+	b, err := os.ReadFile(filepath.Join("testdata", "real", "g7e.2xlarge-mig-4x-dcgmi.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, l := range strings.Split(string(b), "\n") {
+		if m := discoveryInstance.FindStringSubmatch(l); m != nil {
+			got[m[2]] = m[1]
+		}
+	}
+	if len(got) != 4 || got["0"] != "0" || got["3"] != "0" {
+		t.Fatalf("parents %v", got)
 	}
 }

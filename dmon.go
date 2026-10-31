@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -134,23 +135,75 @@ func supportedFields(bin string, fields []field, entities string) (ok []field, u
 	return ok, unsupported, nil
 }
 
-// readEnergy returns the energy counter (mJ) per whole GPU. MIG instance rows
-// are ignored: DCGM has no per-instance energy counter.
-func readEnergy(bin, entities string) (map[string]float64, error) {
+// readEnergy returns the energy counter (mJ) per whole GPU.
+//
+// DCGM has no per-instance energy counter: GPU-I rows repeat the whole GPU's
+// value on every instance, so they are never summed. When only MIG instances
+// were requested, the counter is read from their parent GPUs instead, once
+// per GPU (viaParents reports this).
+func readEnergy(bin, entities string) (mj map[string]float64, viaParents bool, err error) {
 	rows, err := dmonOnce(bin, []field{{ID: energyFieldID, Name: "energy_mj"}}, entities, 1)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	out := map[string]float64{}
+	var instances []string
 	for _, r := range rows {
-		if r.EntType == "GPU" && !math.IsNaN(r.Vals[0]) {
+		switch {
+		case r.EntType == "GPU" && !math.IsNaN(r.Vals[0]):
 			out[r.EntID] = r.Vals[0]
+		case r.EntType == "GPU-I":
+			instances = append(instances, r.EntID)
 		}
 	}
-	if len(out) == 0 {
-		return nil, fmt.Errorf("no whole-GPU energy readings (MIG instances alone have no energy counter)")
+	if len(out) > 0 {
+		return out, false, nil
 	}
-	return out, nil
+	if len(instances) == 0 {
+		return nil, false, fmt.Errorf("no whole-GPU energy readings")
+	}
+	parents, err := migParents(bin)
+	if err != nil {
+		return nil, false, fmt.Errorf("MIG instances only, and their parent GPUs are unknown: %w", err)
+	}
+	seen := map[string]bool{}
+	var gpus []string
+	for _, id := range instances {
+		if g, ok := parents[id]; ok && !seen[g] {
+			seen[g] = true
+			gpus = append(gpus, g)
+		}
+	}
+	if len(gpus) == 0 {
+		return nil, false, fmt.Errorf("no parent GPU found for MIG instances %s", strings.Join(instances, ","))
+	}
+	out, _, err = readEnergy(bin, strings.Join(gpus, ","))
+	return out, true, err
+}
+
+// discoveryInstance matches a GPU instance line of `dcgmi discovery -c`:
+//
+//	| -> I 0/3          | GPU Instance (EntityID: 0)          |
+var discoveryInstance = regexp.MustCompile(`->\s*I\s+(\d+)/\d+\s*\|\s*GPU Instance \(EntityID:\s*(\d+)\)`)
+
+// migParents maps each MIG GPU instance entity ID to its parent GPU index.
+func migParents(bin string) (map[string]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, bin, "discovery", "-c").CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("dcgmi discovery -c: %v: %s", err, strings.TrimSpace(string(out)))
+	}
+	m := map[string]string{}
+	for _, l := range strings.Split(string(out), "\n") {
+		if g := discoveryInstance.FindStringSubmatch(l); g != nil {
+			m[g[2]] = g[1]
+		}
+	}
+	if len(m) == 0 {
+		return nil, fmt.Errorf("dcgmi discovery -c listed no GPU instances")
+	}
+	return m, nil
 }
 
 // sampler runs a streaming `dcgmi dmon` and delivers timestamped rows.
