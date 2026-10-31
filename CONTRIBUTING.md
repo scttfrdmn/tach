@@ -43,6 +43,15 @@ section and fails if there isn't one.
 tach as their instrument. **Add fields; do not rename or remove them.** Finding `code`s are
 stable identifiers; their `text` is for people and may change.
 
+Two tests hold this:
+
+- `TestSummaryContract` compares every JSON path a summary can carry with
+  `testdata/contract/summary-fields.txt`. A missing path fails as a contract break; a new
+  path fails until it is added to the list.
+- `TestGoldenSummaries` compares the summary from each mock scenario with
+  `testdata/golden/`. After an intended output change, regenerate both with
+  `go test -run 'Golden|Contract' -update .` and review the diff in the PR.
+
 ## Findings thresholds
 
 The thresholds in `summary.go` are heuristics. Change one only when a validation run shows it
