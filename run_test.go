@@ -528,3 +528,30 @@ func TestCtrlCKeepsSampling(t *testing.T) {
 		t.Fatalf("sampling stopped at %.1fs of a %.1fs run (SIGINT at ~2s): dmon died with the Ctrl-C", lastElapsed, s.WallSeconds)
 	}
 }
+
+// TestRunDropsUnsupportedField reproduces the L40S: DCGM rejects the whole
+// watch set because fp64_active is unsupported. tach must drop that field
+// and record everything else.
+func TestRunDropsUnsupportedField(t *testing.T) {
+	t.Parallel()
+	r := runTach(t, []string{"MOCK_UNSUPPORTED=1006"}, "--", "sleep", "1.1")
+	s := r.sum
+	if r.code != 0 || !s.DCP || strings.Join(s.UnsupportedFields, ",") != "fp64_active" {
+		t.Fatalf("exit %d dcp %v unsupported %v", r.code, s.DCP, s.UnsupportedFields)
+	}
+	for _, h := range r.header {
+		if h == "fp64_active" {
+			t.Fatal("unsupported field still in CSV header")
+		}
+	}
+	g := entity(t, s, "GPU", "0")
+	if _, ok := g.Fields["fp64_active"]; ok || g.Fields["sm_active"].N == 0 || len(r.rows) == 0 {
+		t.Fatalf("fields %v, %d rows", g.Fields, len(r.rows))
+	}
+	if hasCode(s, "fp64_required") || hasCode(s, "fp64_unused") || hasCode(s, "no_samples") {
+		t.Fatalf("findings %+v", s.Findings)
+	}
+	if len(s.Notes) != 1 || !strings.Contains(s.Notes[0], "fp64_active") {
+		t.Fatalf("notes %q", s.Notes)
+	}
+}

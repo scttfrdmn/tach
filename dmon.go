@@ -109,6 +109,31 @@ func probeDCGM(bin, entities string) (dcp bool, err error) {
 	return false, nil
 }
 
+// supportedFields returns the fields dmon accepts as a set here, and the
+// names of those it does not. DCGM rejects a whole watch set when one field
+// is unsupported ("Error setting watches. Result: -6: Feature not supported";
+// fp64_active on an L40S), so when the set fails each field is tried alone.
+// The error is non-nil only when the set still fails without them.
+func supportedFields(bin string, fields []field, entities string) (ok []field, unsupported []string, err error) {
+	if _, err := dmonOnce(bin, fields, entities, 1); err == nil {
+		return fields, nil, nil
+	}
+	for _, f := range fields {
+		if _, err := dmonOnce(bin, []field{f}, entities, 1); err != nil {
+			unsupported = append(unsupported, f.Name)
+			continue
+		}
+		ok = append(ok, f)
+	}
+	if len(ok) == 0 {
+		return nil, unsupported, fmt.Errorf("dcgmi dmon accepts none of the requested fields")
+	}
+	if _, err := dmonOnce(bin, ok, entities, 1); err != nil {
+		return nil, unsupported, fmt.Errorf("dcgmi dmon rejects the requested fields together, though each works alone: %v", err)
+	}
+	return ok, unsupported, nil
+}
+
 // readEnergy returns the energy counter (mJ) per whole GPU. MIG instance rows
 // are ignored: DCGM has no per-instance energy counter.
 func readEnergy(bin, entities string) (map[string]float64, error) {

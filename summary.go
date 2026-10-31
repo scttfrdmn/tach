@@ -37,6 +37,10 @@ type Summary struct {
 
 	PCIeLineRateGBs float64 `json:"pcie_linerate_gbs,omitempty"`
 
+	// Requested fields DCGM does not support on this GPU (e.g. fp64_active
+	// on an L40S). They are absent from the CSV and entity stats.
+	UnsupportedFields []string `json:"unsupported_fields,omitempty"`
+
 	// Optional, set by --work/--unit/--price-per-hour or `tach annotate`.
 	Work         float64   `json:"work,omitempty"`
 	Unit         string    `json:"unit,omitempty"`

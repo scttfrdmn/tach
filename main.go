@@ -153,6 +153,15 @@ func cmdRun(argv []string) int {
 		fields = dropProf(fields)
 		sum.DCP = false
 	}
+	fields, sum.UnsupportedFields, err = supportedFields(*dcgmiBin, fields, *entities)
+	if err != nil {
+		fatalf("%v", err)
+	}
+	if len(sum.UnsupportedFields) > 0 {
+		names := strings.Join(sum.UnsupportedFields, ", ")
+		warnf("DCGM on this GPU does not support %s; not recorded, and findings that need it are skipped.", names)
+		sum.Notes = append(sum.Notes, "unsupported on this GPU, not recorded: "+names)
+	}
 
 	if *csvPath == "" {
 		*csvPath = fmt.Sprintf("tach-%d.csv", time.Now().Unix())
