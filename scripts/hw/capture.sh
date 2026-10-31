@@ -6,8 +6,11 @@
 #
 # Writes <outdir>/<instance>-*.txt, <instance> being the EC2 instance type
 # from IMDSv2 (or "unknown"):
-#   -identity.txt      dcgmi --version, nvidia-smi -q head, dcgmi discovery -l, profile groups
-#   -dmon.txt          dmon -c 5 straight to a file, then piped through cat (as tach reads it)
+#   -identity.txt      dcgmi --version, nvidia-smi -q head, dcgmi discovery -l, profile groups,
+#                      requested, supported and dropped dmon fields
+#   -dmon.txt          dmon -c 5 straight to a file with every requested field (an
+#                      unsupported one shows as DCGM's error), then the supported
+#                      fields piped through cat (as tach reads it)
 #   -dmon-pipe-ts.txt  dmon -c 10 piped through a line timestamper (arrival time per line)
 #   -dmon-stdbuf-ts.txt / -dmon-pty-ts.txt  same via stdbuf -oL and a pty, if available
 #   -dmon-sigint.txt   streaming dmon, SIGINT after 3.5 s: rows after the signal, exit status
@@ -18,6 +21,9 @@
 # Env: LOAD_CMD  a shell command run in the background during the blank-rate
 #                captures (e.g. "python3 matmul.py --dtype bf16 --seconds 90").
 #      DCGMI     dcgmi binary (default dcgmi).
+# Every step after the first -dmon.txt capture requests only the fields this
+# GPU supports (supported_fields in lib.sh): DCGM rejects a dmon with any
+# unsupported field, e.g. fp64_active (1006) on an L40S, and records nothing.
 # All outputs are scrubbed of 12-digit AWS account numbers.
 set -euo pipefail
 
@@ -34,8 +40,8 @@ mkdir -p "$out"
 DCGMI="${DCGMI:-dcgmi}"
 inst="${INSTANCE:-$(instance_type)}"
 p="$out/$inst"
-fields="1002,1003,1004,1005,1006,250,252,155,156"
-triage="1002,1003,1004,1005,1006"
+req_fields="1002,1003,1004,1005,1006,250,252,155,156"
+req_triage="1002,1003,1004,1005,1006"
 work="$(mktemp -d)"
 load_pid=""
 cleanup() {
@@ -46,6 +52,23 @@ trap cleanup EXIT
 
 echo "capture: instance=$inst outdir=$out"
 ensure_hostengine
+
+# Probe once; every step after the first -dmon.txt capture uses these.
+fields="$(supported_fields "$req_fields")"
+triage="$(supported_fields "$req_triage")"
+[[ -n "$fields" ]] || echo "capture: no requested field is supported; the dmon steps will fail" >&2
+
+# dropped_from <requested> <supported> echoes the requested fields missing
+# from the supported list, comma-joined, or "none".
+dropped_from() {
+	local id out=""
+	local -a ids
+	IFS=, read -ra ids <<<"$1"
+	for id in "${ids[@]}"; do
+		[[ ",$2," == *",$id,"* ]] || out="${out:+$out,}$id"
+	done
+	printf '%s\n' "${out:-none}"
+}
 
 # section prints a header naming the command that follows.
 section() { printf '\n### %s\n### at %s\n' "$*" "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"; }
@@ -100,19 +123,28 @@ na_counts() {
 	section "uname -a; /etc/os-release"
 	uname -a
 	grep -E '^(NAME|VERSION)=' /etc/os-release || true
+	section "dmon fields (each probed with: $DCGMI dmon -e <id> -c 1; kept if it gives a GPU row)"
+	echo "The first -dmon.txt capture requests every field; the other dmon steps"
+	echo "request only the supported ones, so a dropped field has no column there."
+	echo "fields requested: $req_fields"
+	echo "fields supported: ${fields:-none}"
+	echo "fields dropped:   $(dropped_from "$req_fields" "$fields")"
+	echo "triage requested: $req_triage"
+	echo "triage supported: ${triage:-none}"
+	echo "triage dropped:   $(dropped_from "$req_triage" "$triage")"
 } >"$p-identity.txt"
 
 # ---- dmon format: direct to file, then piped ------------------------------
 {
 	section "dcgmi --version"
 	"$DCGMI" --version 2>&1 || echo "exit=$?"
-	section "dcgmi dmon -e $fields -d 1000 -c 5   (stdout is a file)"
+	section "dcgmi dmon -e $req_fields -d 1000 -c 5   (stdout is a file)"
 } >"$p-dmon.txt"
 rc=0
-"$DCGMI" dmon -e "$fields" -d 1000 -c 5 >>"$p-dmon.txt" 2>&1 || rc=$?
+"$DCGMI" dmon -e "$req_fields" -d 1000 -c 5 >>"$p-dmon.txt" 2>&1 || rc=$?
 echo "exit=$rc" >>"$p-dmon.txt"
 {
-	section "dcgmi dmon -e $fields -d 1000 -c 5 | cat   (stdout is a pipe)"
+	section "dcgmi dmon -e $fields -d 1000 -c 5 | cat   (stdout is a pipe; supported fields)"
 	rc=0
 	"$DCGMI" dmon -e "$fields" -d 1000 -c 5 2>&1 | cat || rc=$?
 	echo "exit=$rc"
