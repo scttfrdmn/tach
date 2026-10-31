@@ -20,7 +20,7 @@
       "fields": {
         "dram_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.3,
           "p50": 0.3,
           "p95": 0.3,
@@ -74,7 +74,7 @@
         },
         "sm_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.85,
           "p50": 0.85,
           "p95": 0.85,
@@ -92,7 +92,7 @@
         },
         "sm_occupancy": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.4,
           "p50": 0.4,
           "p95": 0.4,
@@ -101,7 +101,7 @@
         },
         "tensor_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.02,
           "p50": 0.02,
           "p95": 0.02,

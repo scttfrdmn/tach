@@ -20,7 +20,7 @@
       "fields": {
         "dram_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.35,
           "p50": 0.35,
           "p95": 0.35,
@@ -47,7 +47,7 @@
         },
         "fp16_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0,
           "p50": 0,
           "p95": 0,
@@ -83,7 +83,7 @@
         },
         "sm_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.81,
           "p50": 0.81,
           "p95": 0.81,
@@ -101,7 +101,7 @@
         },
         "tensor_active": {
           "n": 0,
-          "missing": 0,
+          "missing": 1,
           "mean": 0.01,
           "p50": 0.01,
           "p95": 0.01,

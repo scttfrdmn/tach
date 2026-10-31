@@ -13,7 +13,7 @@
 if [ "${MOCK_FAIL:-0}" = "1" ]; then
   echo "Error: unable to establish a connection to the specified host: localhost"
   echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
-  exit 255
+  exit 235  # dcgmi 4.7's status with nv-hostengine stopped (g6e.xlarge)
 fi
 [ "$1" = "dmon" ] || { echo "mock dcgmi: only dmon" >&2; exit 1; }
 shift
@@ -58,16 +58,42 @@ val() {
   esac
 }
 IFS=, read -ra F <<< "$ids"
-printf '#Entity   ID'; for i in "${F[@]}"; do printf '  F%s' "$i"; done; echo
-echo 'ID'
+# Header, row and column layout as dcgmi dmon 4.7 prints them (captured on
+# g7e.2xlarge and g6e.xlarge, testdata/real/): "#Entity" then each field's
+# short tag, an "ID" line carrying units, entity columns 16 wide, profiling
+# columns 13, device columns 18, the energy counter 24.
+tag() {
+  case $1 in
+    1001) echo GRACT;; 1002) echo SMACT;; 1003) echo SMOCC;; 1004) echo TENSO;; 1005) echo DRAMA;;
+    1006) echo FP64A;; 1007) echo FP32A;; 1008) echo FP16A;; 1009) echo PCITX;; 1010) echo PCIRX;;
+    100) echo SMCLK;; 150) echo TMPTR;; 155) echo POWER;; 156) echo TOTEC;; 203) echo GPUTL;;
+    250) echo FBTTL;; 252) echo FBUSD;; *) echo "F$1";;
+  esac
+}
+unit() { case $1 in 155) echo W;; 156) echo mJ;; *) echo;; esac; }
+width() { if [ "$1" -ge 1001 ] && [ "$1" -le 1012 ]; then echo 13; elif [ "$1" = 156 ]; then echo 24; else echo 18; fi; }
+hdr=$(printf '%-16s' '#Entity'); ids_line=$(printf '%-16s' 'ID')
+for i in "${F[@]}"; do
+  w=$(width "$i")
+  hdr="$hdr$(printf "%-${w}s" "$(tag "$i")")"
+  ids_line="$ids_line$(printf "%-${w}s" "$(unit "$i")")"
+done
+echo "$hdr"
+echo "$ids_line"
 n=0
 while :; do
   ents=("GPU 0")
   [ "${MOCK_MIG:-0}" = "1" ] && ents+=("GPU-I 0" "GPU-I 1")
   for e in "${ents[@]}"; do
-    line="$e"
+    line=$(printf '%-16s' "$e")
     for i in "${F[@]}"; do
-      if [ "$i" = 156 ] && [ "${e%% *}" != "GPU" ]; then line="$line   N/A"; else line="$line   $(val "$i" "$e")"; fi
+      w=$(width "$i")
+      if [ "$i" = 156 ] && [ "${e%% *}" != "GPU" ]; then v=N/A
+      # Real DCGM prints N/A for profiling fields in the first row after
+      # the watch is created.
+      elif [ "$n" -eq 0 ] && [ "$i" -ge 1001 ] && [ "$i" -le 1012 ]; then v=N/A
+      else v=$(val "$i" "$e"); fi
+      line="$line$(printf "%-${w}s" "$v")"
     done
     echo "$line"
   done

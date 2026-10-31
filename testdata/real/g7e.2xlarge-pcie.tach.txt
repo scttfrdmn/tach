@@ -1,0 +1,23 @@
+
+── tach 0.1.0-dev ── triage profile, 40.8s, exit 0, g7e.2xlarge
+GPU 0 (42 samples)
+  sm_active      mean 2.43902e-05 p50 0          p95 0          max 0.001
+  sm_occupancy   mean 2.43902e-05 p50 0          p95 0          max 0.001
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0347073  p50 0.035      p95 0.036      max 0.036
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  pcie_tx_bps    mean 3.20953e+10 p50 1.8484e+10 p95 6.21667e+10 max 6.21685e+10
+  pcie_rx_bps    mean 2.9124e+10 p50 1.7435e+10 p95 5.95952e+10 max 5.95956e+10
+  power_w        mean 100.92     p50 103.427    p95 103.726    max 103.853
+  sm_clock_mhz   mean 2285.71    p50 2340       p95 2340       max 2340
+  fb_used_mib    mean 1508.57    p50 1584       p95 1584       max 1584
+  fb_total_mib   mean 97887      p50 97887      p95 97887      max 97887
+  gpu_util_pct   mean 95.2381    p50 100        p95 100        max 100
+  gpu_temp_c     mean 31.6667    p50 32         p95 33         max 33
+energy: 4301.7 J (counter)
+verdict (heuristic): underutilized (PCIe-bound); oversized memory
+  - SM active averaged 0.00: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.
+  - PCIe reached 99% of line rate (p95) while SMs were idle: likely input-bound or host round-trips.
+  - FP64 pipe active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 1.5 GiB of 95.6 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g7e.2xlarge-pcie.csv.summary.json

@@ -1,0 +1,190 @@
+
+### dcgmi --version
+### at 2026-10-31T02:04:01.742236795Z
+
+dcgmi  version: 4.7.0
+
+
+### nvidia-smi -q (head)
+### at 2026-10-31T02:04:01.745184160Z
+
+==============NVSMI LOG==============
+
+Timestamp                                              : Sat Oct 31 02:04:01 2026
+Driver Version                                         : 595.112.07
+CUDA Version                                           : 13.2
+
+Attached GPUs                                          : 1
+GPU 00000000:2B:00.0
+    Product Name                                       : NVIDIA RTX PRO 6000 Blackwell Server Edition
+    Product Brand                                      : NVIDIA
+    Product Architecture                               : Blackwell
+    Display Mode                                       : Requested functionality has been deprecated
+    Display Attached                                   : Yes
+    Display Active                                     : Disabled
+    Persistence Mode                                   : Enabled
+    Addressing Mode                                    : HMM
+    MIG Mode
+        Current                                        : Disabled
+        Pending                                        : Disabled
+    Accounting Mode                                    : Disabled
+    Accounting Mode Buffer Size                        : 4000
+    Driver Model
+        Current                                        : N/A
+        Pending                                        : N/A
+    Serial Number                                      : 1323825403260
+    GPU UUID                                           : GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9
+    GPU PDI                                            : 0xefaa7d30f9540cb0
+    Minor Number                                       : 0
+    VBIOS Version                                      : 98.02.AF.00.01
+    MultiGPU Board                                     : No
+    Board ID                                           : 0x2b00
+    Board Part Number                                  : 900-2G153-A800-000
+    GPU Part Number                                    : 2BB5-895-A1
+    FRU Part Number                                    : N/A
+    Platform Info
+        Chassis Serial Number                          : 
+        Slot Number                                    : 0
+        Tray Index                                     : 0
+        Host ID                                        : 1
+        Peer Type                                      : Direct Connected
+        Module Id                                      : 1
+        GPU Fabric GUID                                : 0x0000000000000000
+    Inforom Version
+        Image Version                                  : G153.0210.00.02
+
+### nvidia-smi -L
+### at 2026-10-31T02:04:01.775515281Z
+GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9)
+
+### dcgmi discovery -l
+### at 2026-10-31T02:04:01.796809394Z
+1 GPU found (Active).
++--------+----------------------------------------------------------------------+
+| GPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
+| 0      | Name: NVIDIA RTX PRO 6000 Blackwell Server Edition                   |
+|        | PCI Bus ID: 00000000:2B:00.0                                         |
+|        | Device UUID: GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9                |
++--------+----------------------------------------------------------------------+
+0 NvSwitches found.
++-----------+
+| Switch ID |
++-----------+
++-----------+
+0 ConnectX found.
++----------+
+| ConnectX |
++----------+
++----------+
+0 CPUs found.
++--------+----------------------------------------------------------------------+
+| CPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
++--------+----------------------------------------------------------------------+
+
+### dcgmi profile -l -i 0 (profiling metric groups)
+### at 2026-10-31T02:04:01.806385763Z
++----------------+----------+------------------------------------------------------+
+| Group.Subgroup | Field ID | Field Tag                                            |
++----------------+----------+------------------------------------------------------+
+| A.0            | 1001     | gr_engine_active                                     |
+| A.0            | 1002     | sm_active                                            |
+| A.0            | 1003     | sm_occupancy                                         |
+| A.0            | 1004     | tensor_active                                        |
+| A.0            | 1005     | dram_active                                          |
+| A.0            | 1006     | fp64_active                                          |
+| A.0            | 1007     | fp32_active                                          |
+| A.0            | 1008     | fp16_active                                          |
+| A.0            | 1009     | pcie_tx_bytes                                        |
+| A.0            | 1010     | pcie_rx_bytes                                        |
+| A.0            | 1011     | nvlink_tx_bytes                                      |
+| A.0            | 1012     | nvlink_rx_bytes                                      |
+| A.0            | 1013     | tensor_imma_active                                   |
+| A.0            | 1014     | tensor_hmma_active                                   |
+| A.0            | 1015     | tensor_dfma_active                                   |
+| A.0            | 1016     | integer_active                                       |
+| A.0            | 1017     | nvdec0_active                                        |
+| A.0            | 1018     | nvdec1_active                                        |
+| A.0            | 1019     | nvdec2_active                                        |
+| A.0            | 1020     | nvdec3_active                                        |
+| A.0            | 1021     | nvdec4_active                                        |
+| A.0            | 1022     | nvdec5_active                                        |
+| A.0            | 1023     | nvdec6_active                                        |
+| A.0            | 1024     | nvdec7_active                                        |
+| A.0            | 1025     | nvjpg0_active                                        |
+| A.0            | 1026     | nvjpg1_active                                        |
+| A.0            | 1027     | nvjpg2_active                                        |
+| A.0            | 1028     | nvjpg3_active                                        |
+| A.0            | 1029     | nvjpg4_active                                        |
+| A.0            | 1030     | nvjpg5_active                                        |
+| A.0            | 1031     | nvjpg6_active                                        |
+| A.0            | 1032     | nvjpg7_active                                        |
+| A.0            | 1033     | nvofa0_active                                        |
+| A.0            | 1034     | nvofa1_active                                        |
+| B.0            | 1040     | nvlink_l0_tx_bytes                                   |
+| B.0            | 1041     | nvlink_l0_rx_bytes                                   |
+| B.0            | 1042     | nvlink_l1_tx_bytes                                   |
+| B.0            | 1043     | nvlink_l1_rx_bytes                                   |
+| B.0            | 1044     | nvlink_l2_tx_bytes                                   |
+| B.0            | 1045     | nvlink_l2_rx_bytes                                   |
+| B.0            | 1046     | nvlink_l3_tx_bytes                                   |
+| B.0            | 1047     | nvlink_l3_rx_bytes                                   |
+| B.0            | 1048     | nvlink_l4_tx_bytes                                   |
+| B.0            | 1049     | nvlink_l4_rx_bytes                                   |
+| B.0            | 1050     | nvlink_l5_tx_bytes                                   |
+| B.0            | 1051     | nvlink_l5_rx_bytes                                   |
+| B.0            | 1052     | nvlink_l6_tx_bytes                                   |
+| B.0            | 1053     | nvlink_l6_rx_bytes                                   |
+| B.0            | 1054     | nvlink_l7_tx_bytes                                   |
+| B.0            | 1055     | nvlink_l7_rx_bytes                                   |
+| B.0            | 1056     | nvlink_l8_tx_bytes                                   |
+| B.0            | 1057     | nvlink_l8_rx_bytes                                   |
+| B.0            | 1058     | nvlink_l9_tx_bytes                                   |
+| B.0            | 1059     | nvlink_l9_rx_bytes                                   |
+| B.0            | 1060     | nvlink_l10_tx_bytes                                  |
+| B.0            | 1061     | nvlink_l10_rx_bytes                                  |
+| B.0            | 1062     | nvlink_l11_tx_bytes                                  |
+| B.0            | 1063     | nvlink_l11_rx_bytes                                  |
+| B.0            | 1064     | nvlink_l12_tx_bytes                                  |
+| B.0            | 1065     | nvlink_l12_rx_bytes                                  |
+| B.0            | 1066     | nvlink_l13_tx_bytes                                  |
+| B.0            | 1067     | nvlink_l13_rx_bytes                                  |
+| B.0            | 1068     | nvlink_l14_tx_bytes                                  |
+| B.0            | 1069     | nvlink_l14_rx_bytes                                  |
+| B.0            | 1070     | nvlink_l15_tx_bytes                                  |
+| B.0            | 1071     | nvlink_l15_rx_bytes                                  |
+| B.0            | 1072     | nvlink_l16_tx_bytes                                  |
+| B.0            | 1073     | nvlink_l16_rx_bytes                                  |
+| B.0            | 1074     | nvlink_l17_tx_bytes                                  |
+| B.0            | 1075     | nvlink_l17_rx_bytes                                  |
+| B.0            | 1076     | c2c_tx_all_bytes                                     |
+| B.0            | 1077     | c2c_tx_data_bytes                                    |
+| B.0            | 1078     | c2c_rx_all_bytes                                     |
+| B.0            | 1079     | c2c_rx_data_bytes                                    |
+| B.0            | 1080     | hostmem_cache_hit                                    |
+| B.0            | 1081     | hostmem_cache_miss                                   |
+| B.0            | 1082     | peermem_cache_hit                                    |
+| B.0            | 1083     | peermem_cache_miss                                   |
+| B.0            | 1532     | nvlink_tx_bytes_per_link                             |
+| B.0            | 1533     | nvlink_rx_bytes_per_link                             |
+| C.0            | 1084     | sm_cycles_elapsed                                    |
+| C.0            | 1085     | sm_cycles_active                                     |
+| C.0            | 1086     | mma_cycles_active                                    |
+| C.0            | 1087     | dmma_cycles_active                                   |
+| C.0            | 1088     | hmma_cycles_active                                   |
+| C.0            | 1089     | imma_cycles_active                                   |
+| C.0            | 1090     | dfma_cycles_active                                   |
+| C.0            | 1091     | pcie_tx_bytes_total                                  |
+| C.0            | 1092     | pcie_rx_bytes_total                                  |
+| C.0            | 1093     | integer_cycles_active                                |
+| C.0            | 1094     | fp64_cycles_active                                   |
+| C.0            | 1095     | fp32_cycles_active                                   |
+| C.0            | 1096     | fp16_cycles_active                                   |
++----------------+----------+------------------------------------------------------+
+
+### uname -a; /etc/os-release
+### at 2026-10-31T02:04:01.857083726Z
+Linux ip-172-31-47-219 7.0.0-1014-aws #14-Ubuntu SMP PREEMPT Thu Sep 17 19:08:36 UTC 2026 x86_64 GNU/Linux
+NAME="Ubuntu"
+VERSION="26.04.1 LTS (Resolute Raccoon)"

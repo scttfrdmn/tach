@@ -1,0 +1,9 @@
+
+### script (pty): dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 -c 5 | timestamper
+### at 2026-10-31T02:04:05.413459045Z
+start 1793412245.416278163
+1793412245.431414516 #Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+1793412245.434872218 ID                                                                                                                    W                 mJ                     
+1793412245.438205578 Error setting watches. Result: -6: Feature not supported
+1793412245.441571569 
+end 1793412245.445396131 exit=250

@@ -1,0 +1,55 @@
+### nvidia-smi -L
+GPU 0: NVIDIA RTX PRO 6000 Blackwell Server Edition (UUID: GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9)
+  MIG 2g.48gb     Device  0: (UUID: MIG-c2ce493f-fa40-5581-8804-3e377504fc07)
+  MIG 2g.48gb     Device  1: (UUID: MIG-eff27cad-3b4f-5de3-abbd-7cf485c38dad)
+### dcgmi discovery -c
++-------------------+--------------------------------------------------------------------+
+| Instance Hierarchy                                                                     |
++===================+====================================================================+
+| GPU 0             | GPU GPU-405b8971-3a93-0332-f52e-3e0bcac6e1d9 (EntityID: 0)         |
+| -> I 0/1          | GPU Instance (EntityID: 0)                                         |
+|    -> CI 0/1/0    | Compute Instance (EntityID: 0)                                     |
+| -> I 0/2          | GPU Instance (EntityID: 1)                                         |
+|    -> CI 0/2/0    | Compute Instance (EntityID: 1)                                     |
++-------------------+--------------------------------------------------------------------+
+### dcgmi dmon -i i:0,i:1 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         N/A          29.163            677092357               N/A               
+GPU-I 1         N/A          29.163            677092357               N/A               
+GPU-I 0         0.000        38.880            677092357               N/A               
+GPU-I 1         0.000        38.880            677141262               N/A               
+GPU-I 0         0.000        47.873            677141262               N/A               
+GPU-I 1         0.000        47.873            677141262               N/A               
+exit=0
+### dcgmi dmon -i 0/* -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         0.000        47.873            677185438               N/A               
+GPU-I 1         0.000        47.873            677185438               N/A               
+GPU-I 0         0.000        28.916            677214803               N/A               
+GPU-I 1         0.000        28.916            677214803               N/A               
+GPU-I 0         0.000        29.165            677244206               N/A               
+GPU-I 1         0.000        29.165            677244206               N/A               
+exit=0
+### dcgmi dmon -i i:0 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 0         0.000        29.165            677244206               N/A               
+GPU-I 0         0.000        30.368            677273501               N/A               
+GPU-I 0         0.000        30.135            677302790               N/A               
+exit=0
+### dcgmi dmon -i instance:1 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU-I 1         0.000        29.650            677314630               N/A               
+GPU-I 1         0.000        29.398            677314630               N/A               
+GPU-I 1         0.000        29.399            677343926               N/A               
+exit=0
+### dcgmi dmon -i 0 -e 1002,155,156,203 -c 3
+#Entity         SMACT        POWER             TOTEC                   GPUTL             
+ID                            W                 mJ                                       
+GPU 0           N/A          29.399            677379196               N/A               
+GPU 0           0.000        29.407            677379196               N/A               
+GPU 0           0.000        29.416            677408328               N/A               
+exit=0

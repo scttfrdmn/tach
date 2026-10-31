@@ -1,0 +1,2 @@
+dtype=fp64 size=8192 device=cuda gpu="NVIDIA L40S" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=fp64 size=8192 iters=56 seconds=60.957 tflops=1.010 start=1793412658.607821 end=1793412719.564835
