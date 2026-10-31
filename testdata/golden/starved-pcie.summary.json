@@ -170,6 +170,8 @@
   "energy_method": "counter",
   "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
   "pcie_linerate_gbs": 63,
+  "pcie_link": "gen5 x16",
+  "pcie_linerate_source": "dcgm-link",
   "findings": [
     {
       "code": "starved",

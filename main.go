@@ -86,7 +86,7 @@ func cmdRun(argv []string) int {
 	dcgmiBin := fl.String("dcgmi", "dcgmi", "path to dcgmi")
 	entities := fl.String("entities", "", "dcgmi -i entity list, e.g. 0,1 or i:0,i:1 for MIG instances (default all GPUs)")
 	pcie := fl.Bool("pcie", false, "also sample PCIe TX/RX (DCGM fields 1009/1010, bytes/s); forces interval >= 1s")
-	linerate := fl.Float64("pcie-linerate", 0, "PCIe line rate per direction in GB/s (0 = infer from instance type; Gen5 x16 = 63)")
+	linerate := fl.Float64("pcie-linerate", 0, "PCIe line rate per direction in GB/s (0 = from the link DCGM reports, else the instance type; Gen5 x16 = 63)")
 	work := fl.Float64("work", 0, "units of work the run completed (for per-unit time, energy, cost)")
 	unit := fl.String("unit", "", "name of the work unit, e.g. ns, samples, tokens")
 	price := fl.Float64("price-per-hour", 0, "instance price in $/hour (for cost per unit)")
@@ -135,13 +135,6 @@ func cmdRun(argv []string) int {
 	if sum.InstanceType == "" && !*noIMDS {
 		sum.InstanceType = imdsInstanceType()
 	}
-	if *pcie {
-		sum.PCIeLineRateGBs = *linerate
-		if sum.PCIeLineRateGBs == 0 {
-			sum.PCIeLineRateGBs = inferLineRate(sum.InstanceType)
-		}
-	}
-
 	dcp, err := probeDCGM(*dcgmiBin, *entities)
 	if err != nil {
 		fatalf("dcgmi cannot read the GPUs, so nothing would be measured: %v\n"+
@@ -161,6 +154,9 @@ func cmdRun(argv []string) int {
 		names := strings.Join(sum.UnsupportedFields, ", ")
 		warnf("DCGM on this GPU does not support %s; not recorded, and findings that need it are skipped.", names)
 		sum.Notes = append(sum.Notes, "unsupported on this GPU, not recorded: "+names)
+	}
+	if *pcie {
+		pcieLineRate(sum, *dcgmiBin, *entities, *linerate)
 	}
 
 	if *csvPath == "" {
@@ -327,11 +323,33 @@ func powerIntegral(fields []field, data map[string]*series) (float64, bool) {
 	return total, ok
 }
 
-// inferLineRate maps EC2 GPU families to their PCIe generation (x16 links).
+// pcieLineRate sets the PCIe line rate and its source: the flag, else the
+// link DCGM reports, else the instance table. The family table is wrong where
+// a GPU negotiates fewer lanes: the L40S on g6e.xlarge runs Gen4 x8 (#47).
+// Even the link is an upper bound: on p5.4xlarge (Gen5 x16) pinned copies
+// reached 14 GB/s H2D, 7 GB/s D2H, so only a measured --pcie-linerate is exact.
+func pcieLineRate(sum *Summary, bin, entities string, flagGBs float64) {
+	if flagGBs > 0 {
+		sum.PCIeLineRateGBs, sum.PCIeLineRateSource = flagGBs, "flag"
+		return
+	}
+	l, err := readPCIeLink(bin, entities)
+	if err == nil {
+		sum.PCIeLineRateGBs, sum.PCIeLink, sum.PCIeLineRateSource = l.GBs(), l.String(), "dcgm-link"
+		return
+	}
+	sum.PCIeLineRateGBs, sum.PCIeLineRateSource = inferLineRate(sum.InstanceType), "instance-table"
+	warnf("PCIe link not readable from DCGM (%v); line rate %g GB/s from the instance type. Set --pcie-linerate for an exact one.", err, sum.PCIeLineRateGBs)
+}
+
+// inferLineRate maps EC2 GPU families to their PCIe link, for when DCGM does
+// not report it.
 func inferLineRate(instance string) float64 {
 	fam := strings.SplitN(instance, ".", 2)[0]
 	switch fam {
-	case "g4dn", "g5", "g5g", "g6", "g6e", "g6f", "gr6", "gr6f", "p4d", "p4de":
+	case "g4dn", "g5g":
+		return 15.75 // Gen3 x16: T4, T4G
+	case "g5", "g6", "g6e", "g6f", "gr6", "gr6f", "p4d", "p4de":
 		return 31.5 // Gen4 x16
 	}
 	return 63 // Gen5 x16

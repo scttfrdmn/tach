@@ -28,6 +28,8 @@ interval_ms
 label
 notes
 pcie_linerate_gbs
+pcie_linerate_source
+pcie_link
 per_unit
 per_unit.dollars
 per_unit.joules

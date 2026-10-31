@@ -181,6 +181,87 @@ func readEnergy(bin, entities string) (mj map[string]float64, viaParents bool, e
 	return out, true, err
 }
 
+// pcieLink is a negotiated PCIe link: generation and lane count.
+type pcieLink struct{ Gen, Width int }
+
+func (l pcieLink) String() string { return fmt.Sprintf("gen%d x%d", l.Gen, l.Width) }
+
+// pcieLaneGBs is the per-lane, per-direction rate after encoding, in GB/s:
+// the usual x16 figures (4, 8, 15.75, 31.5, 63, 121) over 16, so Gen5 x16 is
+// 63 and Gen4 x8 is 15.75 exactly.
+var pcieLaneGBs = map[int]float64{1: 0.25, 2: 0.5, 3: 0.984375, 4: 1.96875, 5: 3.9375, 6: 7.5625}
+
+// GBs is the link's line rate per direction, or 0 for an unknown generation.
+func (l pcieLink) GBs() float64 { return pcieLaneGBs[l.Gen] * float64(l.Width) }
+
+// readPCIeLink returns the slowest negotiated link among the whole GPUs
+// measured, from DCGM's max link gen (235) and current width (238). Like the
+// energy counter, the link is a whole-GPU property: with MIG instances only,
+// it is read from their parent GPUs.
+func readPCIeLink(bin, entities string) (pcieLink, error) {
+	rows, err := dmonOnce(bin, []field{fPCIeMaxGen, fPCIeWidth}, entities, 1)
+	if err != nil {
+		return pcieLink{}, err
+	}
+	var instances []string
+	for _, r := range rows {
+		if r.EntType == "GPU-I" {
+			instances = append(instances, r.EntID)
+		}
+	}
+	if l, sawGPU := slowestLink(rows); sawGPU || len(instances) == 0 {
+		return l, linkErr(l)
+	}
+	parents, err := migParents(bin)
+	if err != nil {
+		return pcieLink{}, fmt.Errorf("MIG instances only, and their parent GPUs are unknown: %w", err)
+	}
+	seen := map[string]bool{}
+	var gpus []string
+	for _, id := range instances {
+		if g, ok := parents[id]; ok && !seen[g] {
+			seen[g] = true
+			gpus = append(gpus, g)
+		}
+	}
+	if len(gpus) == 0 {
+		return pcieLink{}, fmt.Errorf("no parent GPU found for MIG instances %s", strings.Join(instances, ","))
+	}
+	if rows, err = dmonOnce(bin, []field{fPCIeMaxGen, fPCIeWidth}, strings.Join(gpus, ","), 1); err != nil {
+		return pcieLink{}, err
+	}
+	l, _ := slowestLink(rows)
+	return l, linkErr(l)
+}
+
+// slowestLink returns the slowest valid link among the whole-GPU rows, and
+// whether there were any whole-GPU rows. N/A (NaN) and out-of-range values
+// are skipped.
+func slowestLink(rows []row) (best pcieLink, sawGPU bool) {
+	for _, r := range rows {
+		if r.EntType != "GPU" {
+			continue
+		}
+		sawGPU = true
+		gen, width := r.Vals[0], r.Vals[1]
+		if !(gen == math.Trunc(gen) && width == math.Trunc(width) && width >= 1 && width <= 32) {
+			continue
+		}
+		l := pcieLink{int(gen), int(width)}
+		if l.GBs() > 0 && (best.Gen == 0 || l.GBs() < best.GBs()) {
+			best = l
+		}
+	}
+	return best, sawGPU
+}
+
+func linkErr(l pcieLink) error {
+	if l.Gen == 0 {
+		return fmt.Errorf("DCGM reports no usable PCIe link generation and width")
+	}
+	return nil
+}
+
 // discoveryInstance matches a GPU instance line of `dcgmi discovery -c`:
 //
 //	| -> I 0/3          | GPU Instance (EntityID: 0)          |

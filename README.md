@@ -83,9 +83,17 @@ tach report --format md runs/*.summary.json
 
 ## Instance type and PCIe line rate
 
-tach reads the instance type from EC2 metadata (IMDSv2, 400 ms timeout); `--instance` overrides it and `--no-imds` skips the lookup. The PCIe line rate defaults from the instance family: 31.5 GB/s per direction (Gen4 x16) for g4dn, g5, g6, g6e, p4d; 63 GB/s (Gen5 x16) otherwise. `--pcie-linerate` overrides it.
+tach reads the instance type from EC2 metadata (IMDSv2, 400 ms timeout); `--instance` overrides it and `--no-imds` skips the lookup.
 
-DCGM documents fields 1009/1010 as bytes per second including protocol headers. tach records them as such; the first hardware validation checks this against a known `cudaMemcpy` rate.
+With `--pcie`, the line rate per direction that `pcie_bound` compares against comes from, in order:
+
+1. `--pcie-linerate` (GB/s), recorded as `pcie_linerate_source: "flag"`.
+2. The link DCGM reports, read once at start: max link generation (field 235) times current width (field 238), using the slowest of the GPUs measured (with MIG instances only, their parent GPUs). Not the current generation, which idles down (an idle RTX PRO 6000 reports Gen1). Per lane after encoding: Gen1 0.25, Gen2 0.5, Gen3 0.985, Gen4 1.969, Gen5 3.938, Gen6 7.563 GB/s, so Gen5 x16 is 63 GB/s and Gen4 x8 is 15.75. The summary records the link as `pcie_link` (e.g. `"gen4 x8"`) and `pcie_linerate_source: "dcgm-link"`. The link can be narrower than the instance family suggests: the L40S on g6e.xlarge negotiates Gen4 x8.
+3. When DCGM does not report the link, the instance family (`pcie_linerate_source: "instance-table"`): 15.75 GB/s (Gen3 x16) for g4dn and g5g; 31.5 GB/s (Gen4 x16) for g5, g6, g6e, gr6, p4d; 63 GB/s (Gen5 x16) otherwise.
+
+`pcie_rx_bps` is host→device and `pcie_tx_bps` is device→host (the GPU's view), in bytes per second including protocol overhead: measured pinned copies read 7-12% above the payload rate on an RTX PRO 6000 and an L40S.
+
+The link rate is an upper bound, not the rate a host can reach. On p5.4xlarge the H100 reports a Gen5 x16 link (63 GB/s), yet pinned copies reached only 14 GB/s host→device and 7 GB/s device→host, so `pcie_bound` cannot fire there against the link rate. For an accurate `pcie_bound`, measure a baseline once per instance type: run pinned copies under `tach --pcie` (`scripts/hw/pcie_copy.cu`), and pass the larger of the p95 `pcie_rx_bps` and `pcie_tx_bps` it records, in GB/s, as `--pcie-linerate`. Use the counters, not the copy's payload rate, because `pcie_bound` compares the counters, overhead included.
 
 ## Validation status
 
