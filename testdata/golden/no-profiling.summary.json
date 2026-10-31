@@ -1,0 +1,92 @@
+{
+  "tach_version": "",
+  "label": "no-profiling",
+  "profile": "triage",
+  "command": [
+    "sleep",
+    "1.1"
+  ],
+  "exit_code": 0,
+  "start": "",
+  "wall_seconds": 0,
+  "interval_ms": 1000,
+  "dcp": false,
+  "csv": "",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 0,
+      "fields": {
+        "fb_total_mib": {
+          "n": 0,
+          "missing": 0,
+          "mean": 46068,
+          "p50": 46068,
+          "p95": 46068,
+          "min": 46068,
+          "max": 46068
+        },
+        "fb_used_mib": {
+          "n": 0,
+          "missing": 0,
+          "mean": 6000,
+          "p50": 6000,
+          "p95": 6000,
+          "min": 6000,
+          "max": 6000
+        },
+        "gpu_temp_c": {
+          "n": 0,
+          "missing": 0,
+          "mean": 55,
+          "p50": 55,
+          "p95": 55,
+          "min": 55,
+          "max": 55
+        },
+        "gpu_util_pct": {
+          "n": 0,
+          "missing": 0,
+          "mean": 100,
+          "p50": 100,
+          "p95": 100,
+          "min": 100,
+          "max": 100
+        },
+        "power_w": {
+          "n": 0,
+          "missing": 0,
+          "mean": 250.5,
+          "p50": 250.5,
+          "p95": 250.5,
+          "min": 250.5,
+          "max": 250.5
+        },
+        "sm_clock_mhz": {
+          "n": 0,
+          "missing": 0,
+          "mean": 2100,
+          "p50": 2100,
+          "p95": 2100,
+          "min": 2100,
+          "max": 2100
+        }
+      }
+    }
+  ],
+  "energy_joules": 500,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "findings": [
+    {
+      "code": "no_dcp",
+      "text": "Device-level metrics only. Run nv-hostengine as root on a datacenter GPU for SM, pipe and DRAM activity."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 5.9 GiB of 45.0 GiB (13%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "oversized memory; device-level only"
+}
