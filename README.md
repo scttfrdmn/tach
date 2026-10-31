@@ -42,6 +42,21 @@ Not every GPU supports every field. The L40S (Ada) has no `fp64_active`, and DCG
 - `<csv>.summary.json`: per-entity mean/p50/p95/min/max, energy, per-unit figures, findings and a verdict.
 - A human summary on stderr.
 
+The summary's main keys:
+
+| Key | Meaning |
+| --- | --- |
+| `tach_version`, `profile`, `command`, `exit_code`, `wall_seconds`, `interval_ms`, `dcp` | the run |
+| `entities[]` | one per GPU or MIG instance: `type` (`GPU`, `GPU-I`), `id`, `samples`, `fields` (per-field `n`, `missing`, `mean`, `p50`, `p95`, `min`, `max` over the whole run), `busy_fraction` and `busy_fields` (the same stats over samples with sm_active ≥ 0.05) |
+| `energy_joules`, `energy_method`, `energy_note` | energy and how it was measured |
+| `pcie_linerate_gbs`, `pcie_link`, `pcie_linerate_source` | with `--pcie` |
+| `unsupported_fields`, `notes` | fields the GPU lacks; anything tach had to say about the run |
+| `work`, `unit`, `price_per_hour`, `per_unit` (`seconds`, `joules`, `dollars`) | from `--work`/`--unit`/`--price-per-hour` or `tach annotate` |
+| `findings[]` | `code` (stable identifier, as in the table below) and `text` (for people; may change) |
+| `verdict` | the findings as one line |
+
+`testdata/contract/summary-fields.txt` lists every path, and a test keeps it current: paths are added, never renamed or removed.
+
 Energy comes from the DCGM energy counter (`DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION`) as a start/stop delta per whole GPU. It includes anything else running on those GPUs. When the counter is unavailable tach integrates sampled power and records `energy_method: power-integral`.
 
 tach's exit code is the wrapped command's exit code; a command killed by signal N gives 128+N, as a shell reports it.
