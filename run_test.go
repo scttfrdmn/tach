@@ -403,3 +403,45 @@ func TestAnnotateThenReport(t *testing.T) {
 		t.Fatalf("bad format: exit %d %q", code, stderr)
 	}
 }
+
+func TestRunDcgmiUnusable(t *testing.T) {
+	t.Parallel()
+	csvPath := filepath.Join(t.TempDir(), "run.csv")
+	code, _, stderr := execTach(t, "--dcgmi", mockDcgmi(t, "MOCK_FAIL=1"), "--no-imds", "--csv", csvPath, "--", "true")
+	if code != 1 {
+		t.Fatalf("exit %d, want 1", code)
+	}
+	for _, want := range []string{"cannot read the GPUs", "unable to establish a connection", "nv-hostengine"} {
+		if !strings.Contains(stderr, want) {
+			t.Errorf("stderr lacks %q:\n%s", want, stderr)
+		}
+	}
+	// It stops before the command starts: no CSV, no summary.
+	if _, err := os.Stat(csvPath); !os.IsNotExist(err) {
+		t.Fatalf("CSV written for a run that measured nothing: %v", err)
+	}
+}
+
+func TestRunProfilingProbeErrorFallsBack(t *testing.T) {
+	t.Parallel()
+	// dcgmi answers device fields but errors on profiling ones: device-only, not fatal.
+	r := runTach(t, []string{"MOCK_PROF_ERROR=1"}, "--", "sleep", "1.1")
+	if r.code != 0 || r.sum.DCP || !hasCode(r.sum, "no_dcp") || len(r.sum.Entities) != 1 {
+		t.Fatalf("exit %d dcp %v findings %+v", r.code, r.sum.DCP, r.sum.Findings)
+	}
+}
+
+func TestRunNoSamplesIsFlagged(t *testing.T) {
+	t.Parallel()
+	r := runTach(t, []string{"MOCK_FAIL_STREAM=1"}, "--", "sleep", "1.1")
+	s := r.sum
+	if r.code != 0 || len(s.Entities) != 0 || len(r.rows) != 0 {
+		t.Fatalf("exit %d, %d entities, %d rows", r.code, len(s.Entities), len(r.rows))
+	}
+	if !hasCode(s, "no_samples") || !strings.HasPrefix(s.Verdict, "no data") {
+		t.Fatalf("findings %+v verdict %q", s.Findings, s.Verdict)
+	}
+	if len(s.Notes) != 1 || !strings.Contains(s.Notes[0], "host engine connection lost") {
+		t.Fatalf("notes %q", s.Notes)
+	}
+}
