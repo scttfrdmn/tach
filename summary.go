@@ -262,6 +262,10 @@ func (s *Summary) verdict() string {
 		"memory_headroom": "oversized memory",
 		"no_dcp":          "device-level only",
 	}
+	// pcie_bound only fires on a starved run, and says why it is starved.
+	if have["pcie_bound"] {
+		labels["starved"] = "underutilized (PCIe-bound)"
+	}
 	var parts []string
 	for _, c := range order {
 		if have[c] {
