@@ -20,6 +20,10 @@ First version, not yet validated on real GPUs. Everything below was tested again
 - **Profiles** `triage` (default), `hpc` and `inference`, each a set of DCGM profiling fields
   plus device fields (power, SM clock, framebuffer used/total, GPU utilization, temperature).
   `--pcie` adds PCIe TX/RX (fields 1009/1010) and raises the interval to 1 s.
+- **Fields the GPU does not support are dropped, not fatal.** DCGM rejects a whole watch set
+  that contains one unsupported field (`fp64_active` on an L40S: "Feature not supported"),
+  which left every run on that GPU with no samples. tach now drops such fields, warns, and
+  lists them as `unsupported_fields` in the summary.
 - **Device-level fallback** when profiling fields are unavailable, recorded as `dcp: false` and
   reported as such rather than as an idle GPU.
 - **dcgmi failures are not mistaken for a device-only run.** When `dcgmi` cannot read the GPUs

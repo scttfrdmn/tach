@@ -66,6 +66,7 @@ func TestGoldenSummaries(t *testing.T) {
 		{"no-profiling", []string{"MOCK_NOPROF=1"}, nil},
 		{"no-energy-counter", []string{"MOCK_NOENERGY=1"}, nil},
 		{"mig", []string{"MOCK_MIG=1"}, []string{"--entities", "i:0,i:1"}},
+		{"fp64-unsupported", []string{"MOCK_UNSUPPORTED=1006"}, nil},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
