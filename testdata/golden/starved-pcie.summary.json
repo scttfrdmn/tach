@@ -164,7 +164,153 @@
           "max": 0
         }
       },
-      "busy_fraction": 0
+      "busy_fraction": 1,
+      "busy_fields": {
+        "dram_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0.04,
+          "p50": 0.04,
+          "p95": 0.04,
+          "min": 0.04,
+          "max": 0.04
+        },
+        "fb_total_mib": {
+          "n": 0,
+          "missing": 0,
+          "mean": 46068,
+          "p50": 46068,
+          "p95": 46068,
+          "min": 46068,
+          "max": 46068
+        },
+        "fb_used_mib": {
+          "n": 0,
+          "missing": 0,
+          "mean": 6000,
+          "p50": 6000,
+          "p95": 6000,
+          "min": 6000,
+          "max": 6000
+        },
+        "fp32_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
+        "fp64_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 0,
+          "missing": 0,
+          "mean": 55,
+          "p50": 55,
+          "p95": 55,
+          "min": 55,
+          "max": 55
+        },
+        "gpu_util_pct": {
+          "n": 0,
+          "missing": 0,
+          "mean": 100,
+          "p50": 100,
+          "p95": 100,
+          "min": 100,
+          "max": 100
+        },
+        "pcie_rx_bps": {
+          "n": 0,
+          "missing": 0,
+          "mean": 5000000000,
+          "p50": 5000000000,
+          "p95": 5000000000,
+          "min": 5000000000,
+          "max": 5000000000
+        },
+        "pcie_tx_bps": {
+          "n": 0,
+          "missing": 0,
+          "mean": 41000000000,
+          "p50": 41000000000,
+          "p95": 41000000000,
+          "min": 41000000000,
+          "max": 41000000000
+        },
+        "power_w": {
+          "n": 0,
+          "missing": 0,
+          "mean": 250.5,
+          "p50": 250.5,
+          "p95": 250.5,
+          "min": 250.5,
+          "max": 250.5
+        },
+        "sm_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0.12,
+          "p50": 0.12,
+          "p95": 0.12,
+          "min": 0.12,
+          "max": 0.12
+        },
+        "sm_clock_mhz": {
+          "n": 0,
+          "missing": 0,
+          "mean": 2100,
+          "p50": 2100,
+          "p95": 2100,
+          "min": 2100,
+          "max": 2100
+        },
+        "sm_occupancy": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0.05,
+          "p50": 0.05,
+          "p95": 0.05,
+          "min": 0.05,
+          "max": 0.05
+        },
+        "tensor_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 0,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      }
     }
   ],
   "energy_joules": 500,
@@ -176,7 +322,7 @@
   "findings": [
     {
       "code": "starved",
-      "text": "SM active averaged 0.12: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware."
+      "text": "SM active averaged 0.12 while PCIe was busy: the GPU waits on host-device transfers. Keep data on the GPU, overlap copies with compute, or use pinned memory before changing hardware."
     },
     {
       "code": "pcie_bound",

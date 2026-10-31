@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `starved` no longer says "idle most of the run" for a GPU that had work in nearly every
+  sample at low SM activity (GROMACS benchMEM on an RTX 5090 runs at sm_active ~0.3
+  throughout); it now says the kernels are too small for the GPU or it waits on the host.
+  Busy samples are those with sm_active >= 0.05, not 0.30.
+
 - `tach report` prints per-unit figures in plain decimals (`0.00002`, not `2e-05`), adds a `findings` column of finding codes to `--format csv`, keeps newlines out of markdown cells, and re-analyses only summaries without a verdict; the EC2 instance-type lookup now has a 400 ms total budget, closes its connection, and rejects an oversize or malformed response (#52).
 
 ## [0.1.0] - 2026-10-31

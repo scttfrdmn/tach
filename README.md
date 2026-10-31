@@ -50,7 +50,7 @@ tach's exit code is the wrapped command's exit code; a command killed by signal 
 
 Findings are heuristics over GPU-level means. The CSV is the ground truth.
 
-`starved` judges the whole run. The other findings judge the **busy samples** (sm_active ≥ 0.30), so a job that spends most of its time loading data or a model is still read for what it does on the GPU. Each entity records `busy_fraction` and `busy_fields` (stats over the busy samples) next to the whole-run `fields`.
+`starved` judges the whole run, and says which kind it is: long idle phases (waiting on data or the host), or work in nearly every sample at low SM activity (kernels too small for the GPU, or launch/CPU-bound). The other findings judge the **busy samples** (sm_active ≥ 0.05), so a job that spends most of its time loading data or a model is still read for what it does on the GPU. Each entity records `busy_fraction` and `busy_fields` (stats over the busy samples) next to the whole-run `fields`.
 
 FP64 activity is `fp64_active` plus FP64 on tensor cores, estimated as `tensor_active` minus `tensor_hmma_active` and `tensor_imma_active`. On an H100 an FP64 DGEMM runs on the tensor cores and shows only there (`fp64_active` reads 0), while BF16, FP16 and TF32 count as hmma. GPUs that lack a field drop it; on such a GPU (the L40S has no `fp64_active`), FP64 need is reported only when it can be measured.
 

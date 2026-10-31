@@ -1,0 +1,61 @@
+                      :-) GROMACS - gmx mdrun, 2026.4 (-:
+
+Executable:   /home/scttfrdmn/tach-val/gromacs/install/bin/gmx
+Data prefix:  /home/scttfrdmn/tach-val/gromacs/install
+Working dir:  /home/scttfrdmn/tach-val/real-gmx
+Command line:
+  gmx mdrun -s benchMEM.tpr -deffnm bench-triage -nsteps 250000 -resethway -noconfout -nb gpu -pme gpu -bonded gpu -ntmpi 1 -ntomp 16 -pin on
+
+Reading file benchMEM.tpr, VERSION 4.6.3-dev-20130701-6e3ae9e (single precision)
+Note: file tpx version 83, software tpx version 138
+Overriding nsteps with value passed on the command line: 250000 steps, 500 ps
+Changing nstlist from 10 to 100, rlist from 1 to 1.133
+
+
+Update groups can not be used for this system because there are three or more consecutively coupled constraints
+
+1 GPU selected for this run.
+Mapping of GPU IDs to the 2 GPU tasks in the 1 rank on this node:
+  PP:0,PME:0
+PP tasks will do non-perturbed short-ranged and most bonded interactions on the GPU
+PP task will update and constrain coordinates on the CPU
+PME tasks will do all aspects on the GPU
+Using 1 MPI thread
+Using 16 OpenMP threads 
+
+starting mdrun 'Great Red Oystrich Makes All Chemists Sane'
+250000 steps,    500.0 ps.
+
+step 125000: resetting all time and cycle counters
+
+               Core t (s)   Wall t (s)        (%)
+       Time:      717.212       44.831     1599.8
+                 (ns/day)    (hour/ns)    (ms/step)  (Matom*steps/s) 
+Performance:      481.815        0.050        0.359          227.922 
+
+GROMACS reminds you: "Is it the invisible chemistry stuff?" (Frida Hyvonen)
+
+
+── tach 0.1.0 ── triage profile, 96.7s, exit 0
+GPU 0 (98 samples)
+  sm_active      mean 0.294082   p50 0.318      p95 0.318      max 0.319
+  sm_occupancy   mean 0.140567   p50 0.152      p95 0.152      max 0.153
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.00183505 p50 0.002      p95 0.002      max 0.002
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0.0620515  p50 0.067      p95 0.067      max 0.068
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 294.994    p50 317.433    p95 319.517    max 320.606
+  sm_clock_mhz   mean 2833.42    p50 2865       p95 2872       max 2970
+  fb_used_mib    mean 552.837    p50 565        p95 565        max 565
+  fb_total_mib   mean 32607      p50 32607      p95 32607      max 32607
+  gpu_util_pct   mean 49.7245    p50 54         p95 55         max 55
+  gpu_temp_c     mean 59.6327    p50 61         p95 62         max 62
+energy: 28955.5 J (counter)
+verdict (heuristic): underutilized; tensor cores idle; oversized memory
+  - SM active averaged 0.29: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware. It was busy in 90% of samples; the other findings describe those.
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Tensor pipe active 0.000 while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32.
+  - Peak memory 0.6 GiB of 31.8 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/tach-val/real-gmx/ceres-rtx5090-gromacs-triage.csv.summary.json
