@@ -13,7 +13,7 @@ LDFLAGS := -s -w \
 	-X main.commit=$(COMMIT) \
 	-X main.date=$(DATE)
 
-.PHONY: build build-arm64 test e2e fuzz lint cover clean tidy
+.PHONY: build build-arm64 test fuzz lint cover clean tidy
 
 build: ## Build the tach binary
 	go build -trimpath -ldflags "$(LDFLAGS)" -o bin/$(BINARY) .
@@ -21,11 +21,8 @@ build: ## Build the tach binary
 build-arm64: ## Cross-compile a static linux/arm64 binary (g5g)
 	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/$(BINARY)-linux-arm64 .
 
-test: ## Run all tests with the race detector
+test: ## Run all tests with the race detector (unit + integration against testdata/mock-dcgmi)
 	go test -race ./...
-
-e2e: ## End-to-end checks against testdata/mock-dcgmi
-	bash scripts/e2e.sh
 
 fuzz: ## Fuzz the dmon line parser for 60s
 	go test -run '^$$' -fuzz 'FuzzParseDmonLine$$' -fuzztime 60s .
