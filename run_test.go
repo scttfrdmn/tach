@@ -472,6 +472,9 @@ func TestAnnotateThenReport(t *testing.T) {
 	if code != 0 || err != nil || len(recs) != 3 || recs[1][0] != "a" {
 		t.Fatalf("csv report exit %d err %v: %q", code, err, out)
 	}
+	if last := len(recs[0]) - 1; recs[0][last] != "findings" || !strings.Contains(";"+recs[1][last]+";", ";fp64_required;") {
+		t.Fatalf("csv findings column: header %q, run a %q", recs[0][last], recs[1][last])
+	}
 
 	if code, _, _ := execTach(t, "report"); code != 2 {
 		t.Fatalf("report without files: exit %d", code)

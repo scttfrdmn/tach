@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `tach report` prints per-unit figures in plain decimals (`0.00002`, not `2e-05`), adds a `findings` column of finding codes to `--format csv`, keeps newlines out of markdown cells, and re-analyses only summaries without a verdict; the EC2 instance-type lookup now has a 400 ms total budget, closes its connection, and rejects an oversize or malformed response (#52).
+
 ## [0.1.0] - 2026-10-31
 
 First release. Measured with DCGM 4.7 on an H100 (p5.4xlarge), an RTX PRO 6000 Blackwell
