@@ -4,6 +4,13 @@
 #   MOCK_NOPROF=1  profiling fields print N/A
 #   MOCK_MIG=1     also print two GPU-I rows
 #   MOCK_ENERGY    path of the energy counter state file
+#   MOCK_NOENERGY=1  the energy counter (field 156) prints N/A
+#   MOCK_FAIL=1    behave like dcgmi with no nv-hostengine: print an error, exit 255
+if [ "${MOCK_FAIL:-0}" = "1" ]; then
+  echo "Error: unable to establish a connection to the specified host: localhost"
+  echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
+  exit 255
+fi
 [ "$1" = "dmon" ] || { echo "mock dcgmi: only dmon" >&2; exit 1; }
 shift
 ids=""; ms=1000; count=0
@@ -25,7 +32,8 @@ val() {
     *:1002) echo 0.85;; *:1003) echo 0.40;; *:1004) echo 0.02;; *:1005) echo 0.30;; *:1006) echo 0.20;;
     *:1007) echo 0.50;; *:1008) echo 0.00;; *:1009) echo 2.0e9;; *:1010) echo 5.0e9;;
     *:155) echo 250.5;; *:100) echo 2100;; *:252) echo 6000;; *:250) echo 46068;; *:203) echo 100;; *:150) echo 55;;
-    *:156) e=$(cat "$efile" 2>/dev/null || echo 1000000); echo "$e"; echo $((e + 500000)) > "$efile";;
+    *:156) [ "${MOCK_NOENERGY:-0}" = "1" ] && { echo N/A; return; }
+           e=$(cat "$efile" 2>/dev/null || echo 1000000); echo "$e"; echo $((e + 500000)) > "$efile";;
     *) echo N/A;;
   esac
 }

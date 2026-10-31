@@ -22,7 +22,7 @@ make build          # bin/tach
 make build-arm64    # bin/tach-linux-arm64, static (g5g)
 ```
 
-Plain `go build .` also works. `make test`, `make e2e` and `make lint` run the checks CI runs.
+Plain `go build .` also works. `make test` and `make lint` run the checks CI runs.
 
 ## Profiles
 
@@ -85,7 +85,7 @@ DCGM documents fields 1009/1010 as bytes per second including protocol headers. 
 
 ## Validation status
 
-v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, `scripts/e2e.sh`): parsing, profiling fallback, MIG entities, PCIe, energy, per-unit math, findings, exit codes. It has not yet run on real GPUs. The hardware validation (dmon format, idle and fallback, PCIe units, energy, FP64 and tensor findings, GROMACS, Ada multiplexing, MIG) is tracked in [#6](https://github.com/scttfrdmn/tach/issues/6).
+v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, driven by `run_test.go`): parsing, profiling fallback, MIG entities, PCIe, energy, per-unit math, findings, exit codes. It has not yet run on real GPUs. The hardware validation (dmon format, idle and fallback, PCIe units, energy, FP64 and tensor findings, GROMACS, Ada multiplexing, MIG) is tracked in [#6](https://github.com/scttfrdmn/tach/issues/6).
 
 ## License
 

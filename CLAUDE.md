@@ -8,7 +8,7 @@ board, not in local files.
 
 ## Commands
 
-- `make build` (→ `bin/tach`), `make test` (race), `make e2e` (mock `dcgmi`), `make lint`,
+- `make build` (→ `bin/tach`), `make test` (race; unit + integration against the mock `dcgmi`), `make lint`,
   `make fuzz`, `make build-arm64`.
 - CI runs `.github/workflows/gate.yml`; the release workflow runs the same gate on a `v*` tag.
 

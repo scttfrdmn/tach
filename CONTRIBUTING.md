@@ -62,7 +62,7 @@ documentation. When a real run disagrees, the run wins:
 ## Before you push
 
 - `make lint` (`go vet` + `golangci-lint`) is clean.
-- `make test` (race-enabled) and `make e2e` pass; new code has tests and touches no network.
+- `make test` (race-enabled; includes the integration tests against the mock `dcgmi`) passes; new code has tests and touches no network.
 - Every `.go` file starts with the header:
 
   ```go
