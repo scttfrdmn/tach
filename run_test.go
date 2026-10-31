@@ -453,3 +453,31 @@ func TestRunSignalledChildExitCode(t *testing.T) {
 		t.Fatalf("exit %d / summary %d, want 143 (128+SIGTERM)", r.code, r.sum.ExitCode)
 	}
 }
+
+func TestReportRefusesMixedUnits(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	write := func(name, unit string) string {
+		p := filepath.Join(dir, name+".summary.json")
+		s := &Summary{Label: name, WallSeconds: 100, Work: 10, Unit: unit}
+		s.computePerUnit()
+		if err := writeSummary(p, s); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	ns, ns2, samples := write("a", "ns"), write("b", "ns"), write("c", "samples")
+	noWork := filepath.Join(dir, "d.summary.json")
+	if err := writeSummary(noWork, &Summary{Label: "d", WallSeconds: 5, Unit: "frames"}); err != nil {
+		t.Fatal(err)
+	}
+
+	code, _, stderr := execTach(t, "report", ns, samples)
+	if code != 1 || !strings.Contains(stderr, `different units ("ns", "samples")`) {
+		t.Fatalf("mixed units: exit %d, %q", code, stderr)
+	}
+	// Same unit, plus a run with no per-unit figures (its unit is not compared).
+	if code, out, stderr := execTach(t, "report", ns, ns2, noWork); code != 0 || !strings.Contains(out, "| s/ns |") {
+		t.Fatalf("same units: exit %d %q %q", code, out, stderr)
+	}
+}
