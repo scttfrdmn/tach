@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-First version, not yet validated on real GPUs. Everything below was tested against a mock
-`dcgmi` only; the hardware validation is tracked on GitHub.
+## [0.1.0] - 2026-10-31
+
+First release. Measured with DCGM 4.7 on an H100 (p5.4xlarge), an RTX PRO 6000 Blackwell
+(g7e.2xlarge), an L40S (g6e.xlarge) and a GeForce RTX 5090: dmon format and pipe behaviour,
+idle, PCIe units and direction, energy counter against integrated power, FP32/BF16/FP64
+findings, sampling blanks, and MIG 2x/4x. Raw captures are in `testdata/real/`; results and
+what is still open (GROMACS, the no-profiling fallback on real hardware) are on issue #6.
 
 ### Added
 
