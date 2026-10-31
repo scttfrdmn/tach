@@ -29,6 +29,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"unsafe"
 )
 
 // Build identity, overridden at link time (see the Makefile and
@@ -217,6 +218,12 @@ func cmdRun(argv []string) int {
 	}
 	go func() {
 		for s := range sigs {
+			// A Ctrl-C at the terminal already went to the whole foreground
+			// process group, child included; forwarding it again would
+			// deliver it twice.
+			if s == os.Interrupt && inForegroundGroup() {
+				continue
+			}
 			_ = child.Process.Signal(s)
 		}
 	}()
@@ -316,6 +323,15 @@ func inferLineRate(instance string) float64 {
 		return 31.5 // Gen4 x16
 	}
 	return 63 // Gen5 x16
+}
+
+// inForegroundGroup reports whether tach's process group is the foreground
+// group of the terminal on stdin, i.e. whether a terminal-generated signal
+// reached the child as well as tach.
+func inForegroundGroup() bool {
+	var pgrp int32
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, os.Stdin.Fd(), uintptr(syscall.TIOCGPGRP), uintptr(unsafe.Pointer(&pgrp)))
+	return errno == 0 && int(pgrp) == syscall.Getpgrp()
 }
 
 func minDur(a, b time.Duration) time.Duration {

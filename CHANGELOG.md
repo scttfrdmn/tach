@@ -14,6 +14,7 @@ First version, not yet validated on real GPUs. Everything below was tested again
 
 - **`tach [flags] -- <command>`** wraps a command, samples DCGM through `dcgmi dmon`, and
   passes the command's exit code through (128+N when the command is killed by signal N).
+  A Ctrl-C reaches the command once, and sampling continues while the command shuts down.
   Writes a per-sample CSV (blank cells are missing samples, not zeros) and a
   `<csv>.summary.json` with per-entity mean/p50/p95/min/max.
 - **Profiles** `triage` (default), `hpc` and `inference`, each a set of DCGM profiling fields
