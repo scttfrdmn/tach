@@ -63,8 +63,14 @@ documentation. When a real run disagrees, the run wins:
 
 - `make lint` (`go vet` + `golangci-lint`) is clean.
 - `make test` (race-enabled) and `make e2e` pass; new code has tests and touches no network.
-- Every `.go` file carries the `// SPDX-License-Identifier: Apache-2.0` header.
+- Every `.go` file starts with the header:
+
+  ```go
+  // Copyright 2026 Scott Friedman
+  // SPDX-License-Identifier: Apache-2.0
+  ```
 
 ## License
 
-By contributing you agree that your contributions are licensed under the Apache License 2.0.
+tach is Copyright 2026 Scott Friedman and licensed under the Apache License 2.0. By
+contributing you agree that your contributions are licensed under the same terms.
