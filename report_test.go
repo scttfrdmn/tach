@@ -102,7 +102,8 @@ func TestReportRowsHeader(t *testing.T) {
 		want []string
 	}{
 		{"no unit", []*Summary{{}, {}}, hdr("unit")},
-		{"first non-empty unit", []*Summary{{}, {Unit: "frame"}}, hdr("frame")},
+		{"unit of the first run with per-unit figures", []*Summary{{Unit: "ns"}, {Unit: "frame", PerUnit: &PerUnit{Seconds: 1}}}, hdr("frame")},
+		{"unit without per-unit figures is ignored", []*Summary{{}, {Unit: "frame"}}, hdr("unit")},
 		{"no runs", nil, hdr("unit")},
 	}
 	for _, c := range cases {

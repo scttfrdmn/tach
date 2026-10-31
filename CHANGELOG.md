@@ -32,7 +32,8 @@ First version, not yet validated on real GPUs. Everything below was tested again
 - **Per-unit figures** with `--work`, `--unit` and `--price-per-hour`: seconds, joules and
   dollars per unit. `tach annotate` adds them to an existing summary after the run.
 - **`tach report`** compares runs as a Markdown or CSV table, sorted by cost per unit, then
-  time per unit, then wall time.
+  time per unit, then wall time. It refuses runs that measure different units rather than compare
+  unlike quantities.
 - **MIG instances** through `--entities` (passed to `dcgmi -i`); energy and PCIe stay
   whole-GPU.
 - **Instance type** from EC2 metadata (IMDSv2, 400 ms timeout), and a PCIe line rate inferred
