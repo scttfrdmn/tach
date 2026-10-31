@@ -6,6 +6,8 @@
 #   MOCK_ENERGY    path of the energy counter state file
 #   MOCK_NOENERGY=1  the energy counter (field 156) prints N/A
 #   MOCK_FAIL=1    behave like dcgmi with no nv-hostengine: print an error, exit 255
+#   MOCK_FAIL_STREAM=1  short queries work, a streaming dmon (no -c) fails at once
+#   MOCK_PROF_ERROR=1   a query for profiling fields (1001-1012) errors instead of printing N/A
 if [ "${MOCK_FAIL:-0}" = "1" ]; then
   echo "Error: unable to establish a connection to the specified host: localhost"
   echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
@@ -19,6 +21,16 @@ while [ $# -gt 0 ]; do
     -e) ids="$2"; shift 2;; -d) ms="$2"; shift 2;; -c) count="$2"; shift 2;; -i) shift 2;; *) shift;;
   esac
 done
+if [ "${MOCK_FAIL_STREAM:-0}" = "1" ] && [ "$count" -eq 0 ]; then
+  echo "Error: mock stream failure: host engine connection lost" >&2
+  exit 1
+fi
+if [ "${MOCK_PROF_ERROR:-0}" = "1" ]; then
+  case ",$ids," in *,100[0-9],*|*,101[0-2],*)
+    echo "Error setting watches. Result: The requested function is not supported."
+    exit 255;;
+  esac
+fi
 scen="${MOCK_SCENARIO:-fp64}"
 efile="${MOCK_ENERGY:-/tmp/mock_energy}"
 val() {

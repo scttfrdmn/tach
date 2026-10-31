@@ -13,7 +13,7 @@ One static Go binary, standard library only. It shells out to `dcgmi`, so there 
 ## Requirements
 
 - `dcgmi` on `PATH` (installed with DCGM; present on the AWS Deep Learning AMIs).
-- For profiling fields: a datacenter GPU and `nv-hostengine` running as root (`sudo systemctl --now enable nvidia-dcgm`). Without them tach records device-level fields only and says so.
+- For profiling fields: a datacenter GPU and `nv-hostengine` running as root (`sudo systemctl --now enable nvidia-dcgm`). Without them tach records device-level fields only and says so. If `dcgmi` cannot read the GPUs at all (usually `nv-hostengine` not running), tach stops before starting the command and prints dcgmi's error.
 
 ## Build
 
@@ -61,6 +61,7 @@ Findings are heuristics over GPU-level means. The CSV is the ground truth.
 | `tensor_idle` | tensor_active < 0.05 while busy, not FP64-bound, not `hpc` profile | Likely FP32; try BF16 or TF32 |
 | `memory_headroom` | peak fb_used < 25% of installed | A smaller GPU or MIG slice fits |
 | `no_dcp` | profiling fields unavailable | Device-level read only |
+| `no_samples` | dcgmi returned no data during the run | Nothing measured; dcgmi's message is in `notes` |
 
 ## Per-unit figures and reports
 

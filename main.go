@@ -141,7 +141,12 @@ func cmdRun(argv []string) int {
 		}
 	}
 
-	if !profilingAvailable(*dcgmiBin, *entities) {
+	dcp, err := probeDCGM(*dcgmiBin, *entities)
+	if err != nil {
+		fatalf("dcgmi cannot read the GPUs, so nothing would be measured: %v\n"+
+			"  Is nv-hostengine running? Start it with `sudo systemctl --now enable nvidia-dcgm` or `sudo nv-hostengine`.", err)
+	}
+	if !dcp {
 		warnf("DCGM profiling fields are unavailable (needs a datacenter GPU and nv-hostengine running as root).")
 		warnf("Recording device-level metrics only: utilization, memory, power, clocks, energy.")
 		fields = dropProf(fields)
@@ -237,6 +242,14 @@ func cmdRun(argv []string) int {
 	mu.Lock()
 	sum.Entities = entitySummaries(fields, data)
 	mu.Unlock()
+	if len(sum.Entities) == 0 {
+		why := strings.TrimSpace(smp.stderr.String())
+		if why == "" {
+			why = "dcgmi dmon exited without printing a data row"
+		}
+		warnf("no samples were recorded during the run: %s", why)
+		sum.Notes = append(sum.Notes, "no samples recorded: "+why)
+	}
 
 	energyEnd, err2 := readEnergy(*dcgmiBin, *entities)
 	switch {

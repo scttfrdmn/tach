@@ -7,11 +7,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -85,19 +85,27 @@ func dmonOnce(bin string, fields []field, entities string, count int) ([]row, er
 	return rows, nil
 }
 
-// profilingAvailable reports whether DCP fields return numbers here. It takes
-// a few samples because the first one after group creation can be blank.
-func profilingAvailable(bin, entities string) bool {
-	rows, err := dmonOnce(bin, []field{fSMActive}, entities, 3)
-	if err != nil {
-		return false
-	}
+// probeDCGM reports whether DCP fields return numbers here. It takes a few
+// samples because the first one after group creation can be blank.
+//
+// A failed profiling probe alone does not mean "no DCP": when dcgmi cannot
+// reach nv-hostengine every query fails. So it then probes one device field,
+// and if that fails too it returns the error, so the caller can say dcgmi is
+// unusable instead of recording an empty run as a device-only one.
+func probeDCGM(bin, entities string) (dcp bool, err error) {
+	rows, perr := dmonOnce(bin, []field{fSMActive}, entities, 3)
 	for _, r := range rows {
 		if !math.IsNaN(r.Vals[0]) {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	if perr == nil {
+		return false, nil
+	}
+	if _, err := dmonOnce(bin, deviceFields[:1], entities, 1); err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
 // readEnergy returns the energy counter (mJ) per whole GPU. MIG instance rows
@@ -121,8 +129,34 @@ func readEnergy(bin, entities string) (map[string]float64, error) {
 
 // sampler runs a streaming `dcgmi dmon` and delivers timestamped rows.
 type sampler struct {
-	cmd  *exec.Cmd
-	done chan struct{}
+	cmd    *exec.Cmd
+	done   chan struct{}
+	stderr tailBuffer
+}
+
+// tailBuffer keeps the last few KiB written to it: enough of dmon's stderr to
+// explain a failure, bounded however long the run.
+type tailBuffer struct {
+	mu sync.Mutex
+	b  []byte
+}
+
+const tailMax = 4096
+
+func (t *tailBuffer) Write(p []byte) (int, error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.b = append(t.b, p...)
+	if len(t.b) > tailMax {
+		t.b = append([]byte(nil), t.b[len(t.b)-tailMax:]...)
+	}
+	return len(p), nil
+}
+
+func (t *tailBuffer) String() string {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return string(t.b)
 }
 
 func startSampler(bin string, fields []field, interval time.Duration, entities string, onRow func(time.Time, row)) (*sampler, error) {
@@ -131,11 +165,11 @@ func startSampler(bin string, fields []field, interval time.Duration, entities s
 	if err != nil {
 		return nil, err
 	}
-	cmd.Stderr = io.Discard
+	s := &sampler{cmd: cmd, done: make(chan struct{})}
+	cmd.Stderr = &s.stderr
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("start dcgmi dmon: %w", err)
 	}
-	s := &sampler{cmd: cmd, done: make(chan struct{})}
 	go func() {
 		defer close(s.done)
 		sc := bufio.NewScanner(stdout)
