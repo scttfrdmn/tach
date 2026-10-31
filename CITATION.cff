@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use tach in your research, please cite it as below."
+title: "tach: GPU utilization and efficiency through NVIDIA DCGM"
+abstract: >-
+  tach wraps a command and records GPU utilization and efficiency over time through NVIDIA
+  DCGM, classifies the bottleneck with heuristic findings, and reports time, energy and cost
+  per unit of work for comparing runs across instance types.
+type: software
+authors:
+  - family-names: Friedman
+    given-names: Scott A
+    affiliation: Playground Logic LLC
+version: 0.1.0
+license: Apache-2.0
+repository-code: "https://github.com/scttfrdmn/tach"
+keywords:
+  - gpu
+  - dcgm
+  - hpc
+  - right-sizing
+  - energy

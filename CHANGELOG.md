@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+First version, not yet validated on real GPUs. Everything below was tested against a mock
+`dcgmi` only; the hardware validation is tracked on GitHub.
+
+### Added
+
+- **`tach [flags] -- <command>`** wraps a command, samples DCGM through `dcgmi dmon`, and
+  passes the command's exit code through. Writes a per-sample CSV (blank cells are missing
+  samples, not zeros) and a `<csv>.summary.json` with per-entity mean/p50/p95/min/max.
+- **Profiles** `triage` (default), `hpc` and `inference`, each a set of DCGM profiling fields
+  plus device fields (power, SM clock, framebuffer used/total, GPU utilization, temperature).
+  `--pcie` adds PCIe TX/RX (fields 1009/1010) and raises the interval to 1 s.
+- **Device-level fallback** when profiling fields are unavailable, recorded as `dcp: false` and
+  reported as such rather than as an idle GPU.
+- **Energy** from the DCGM energy counter delta per whole GPU, falling back to integrating
+  sampled power (`energy_method: counter | power-integral | none`).
+- **Heuristic findings and a verdict**: `starved`, `pcie_bound`, `low_occupancy`,
+  `memory_bound`, `fp64_required`, `fp64_unused`, `tensor_idle`, `memory_headroom`, `no_dcp`.
+- **Per-unit figures** with `--work`, `--unit` and `--price-per-hour`: seconds, joules and
+  dollars per unit. `tach annotate` adds them to an existing summary after the run.
+- **`tach report`** compares runs as a Markdown or CSV table, sorted by cost per unit, then
+  time per unit, then wall time.
+- **MIG instances** through `--entities` (passed to `dcgmi -i`); energy and PCIe stay
+  whole-GPU.
+- **Instance type** from EC2 metadata (IMDSv2, 400 ms timeout), and a PCIe line rate inferred
+  from the instance family; `--instance`, `--no-imds` and `--pcie-linerate` override.
+- `tach version` prints the version, commit and build date.

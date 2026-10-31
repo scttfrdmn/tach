@@ -22,7 +22,7 @@ func imdsInstanceType() string {
 		return ""
 	}
 	tok, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return ""
 	}
@@ -32,7 +32,7 @@ func imdsInstanceType() string {
 	if err != nil {
 		return ""
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return ""
 	}

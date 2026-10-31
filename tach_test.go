@@ -169,3 +169,28 @@ func TestInferLineRate(t *testing.T) {
 		t.Fatal("line rate inference")
 	}
 }
+
+// FuzzParseDmonLine checks that no dmon line, however malformed, panics the
+// parser or yields a row whose value count differs from the fields requested.
+func FuzzParseDmonLine(f *testing.F) {
+	for _, s := range []string{
+		"GPU 0     0.812    0.401    N/A",
+		"GPU-I 3   0.1 0.2 0.3",
+		"GPU-CI 1  1e10 -0 +Inf",
+		"#Entity   SMACT  SMOCC",
+		"ID",
+		"",
+		"Error: unable to connect",
+	} {
+		f.Add(s, 3)
+	}
+	f.Fuzz(func(t *testing.T, line string, n int) {
+		if n < 0 || n > 64 {
+			return
+		}
+		r, ok := parseDmonLine(line, n)
+		if ok && len(r.Vals) != n {
+			t.Fatalf("%q: %d values for %d fields", line, len(r.Vals), n)
+		}
+	})
+}

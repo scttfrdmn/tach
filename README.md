@@ -18,9 +18,11 @@ One static Go binary, standard library only. It shells out to `dcgmi`, so there 
 ## Build
 
 ```
-go build -o tach .
-GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o tach-arm64 .   # g5g
+make build          # bin/tach
+make build-arm64    # bin/tach-linux-arm64, static (g5g)
 ```
+
+Plain `go build .` also works. `make test`, `make e2e` and `make lint` run the checks CI runs.
 
 ## Profiles
 
@@ -83,11 +85,7 @@ DCGM documents fields 1009/1010 as bytes per second including protocol headers. 
 
 ## Validation status
 
-v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, `scripts/e2e.sh`): parsing, profiling fallback, MIG entities, PCIe, energy, per-unit math, findings, exit codes. It has not yet run on real GPUs. The first hardware runs are:
-
-1. g6e and g7e: a fixed-size `cudaMemcpy` loop to confirm PCIe counter units, and an idle run to confirm `starved`.
-2. GROMACS benchmark on g6e and g7e under `hpc` and `triage`, compared against the GROMACS log's ns/day.
-3. g7e with MIG 2× and 4× to confirm per-instance rows.
+v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, `scripts/e2e.sh`): parsing, profiling fallback, MIG entities, PCIe, energy, per-unit math, findings, exit codes. It has not yet run on real GPUs. The hardware validation (dmon format, idle and fallback, PCIe units, energy, FP64 and tensor findings, GROMACS, Ada multiplexing, MIG) is tracked in [#6](https://github.com/scttfrdmn/tach/issues/6).
 
 ## License
 

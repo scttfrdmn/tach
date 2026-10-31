@@ -140,26 +140,26 @@ func writeMarkdown(w io.Writer, rows [][]string) {
 		for j, c := range r {
 			cells[j] = esc(c)
 		}
-		fmt.Fprintf(w, "| %s |\n", strings.Join(cells, " | "))
+		_, _ = fmt.Fprintf(w, "| %s |\n", strings.Join(cells, " | "))
 		if i == 0 {
 			seps := make([]string, len(r))
 			for j := range seps {
 				seps[j] = "---"
 			}
-			fmt.Fprintf(w, "| %s |\n", strings.Join(seps, " | "))
+			_, _ = fmt.Fprintf(w, "| %s |\n", strings.Join(seps, " | "))
 		}
 	}
 }
 
 func writeFindings(w io.Writer, runs []*Summary) {
-	fmt.Fprintln(w, "\nFindings (heuristic; the CSVs are the ground truth):")
+	_, _ = fmt.Fprintln(w, "\nFindings (heuristic; the CSVs are the ground truth):")
 	for _, s := range runs {
-		fmt.Fprintf(w, "\n%s\n", runName(s))
+		_, _ = fmt.Fprintf(w, "\n%s\n", runName(s))
 		if len(s.Findings) == 0 {
-			fmt.Fprintln(w, "- none")
+			_, _ = fmt.Fprintln(w, "- none")
 		}
 		for _, f := range s.Findings {
-			fmt.Fprintf(w, "- %s\n", f.Text)
+			_, _ = fmt.Fprintf(w, "- %s\n", f.Text)
 		}
 	}
 }
