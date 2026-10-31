@@ -7,6 +7,15 @@ energy_joules
 energy_method
 energy_note
 entities
+entities[].busy_fields
+entities[].busy_fields{}.max
+entities[].busy_fields{}.mean
+entities[].busy_fields{}.min
+entities[].busy_fields{}.missing
+entities[].busy_fields{}.n
+entities[].busy_fields{}.p50
+entities[].busy_fields{}.p95
+entities[].busy_fraction
 entities[].fields
 entities[].fields{}.max
 entities[].fields{}.mean
