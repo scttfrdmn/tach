@@ -13,7 +13,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 )
 
 // Integration tests: tach runs against testdata/mock-dcgmi.
@@ -479,5 +481,50 @@ func TestReportRefusesMixedUnits(t *testing.T) {
 	// Same unit, plus a run with no per-unit figures (its unit is not compared).
 	if code, out, stderr := execTach(t, "report", ns, ns2, noWork); code != 0 || !strings.Contains(out, "| s/ns |") {
 		t.Fatalf("same units: exit %d %q %q", code, out, stderr)
+	}
+}
+
+// TestCtrlCKeepsSampling sends SIGINT to tach's whole process group, as a
+// terminal Ctrl-C does. The command takes 2 s to shut down; dmon, in its own
+// group, must keep sampling through that.
+func TestCtrlCKeepsSampling(t *testing.T) {
+	t.Parallel()
+	csvPath := filepath.Join(t.TempDir(), "run.csv")
+	cmd := exec.Command(os.Args[0], "--dcgmi", mockDcgmi(t), "--no-imds", "--interval", "200ms", "--csv", csvPath,
+		"--", "sh", "-c", `trap 'sleep 2; exit 0' INT; sleep 10 & wait`)
+	cmd.Env = append(os.Environ(), "TACH_TEST_MAIN=1")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(2 * time.Second)
+	sigAt := time.Now()
+	if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
+		t.Fatal(err)
+	}
+	if err := cmd.Wait(); err != nil {
+		t.Fatalf("tach: %v", err)
+	}
+	s, err := readSummary(csvPath + ".summary.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d := time.Since(sigAt); d < 1500*time.Millisecond {
+		t.Fatalf("tach exited %v after SIGINT; the command's 2 s shutdown did not run", d)
+	}
+	// Sampling must cover the shutdown: the last row lands at the end of the
+	// run, not at the signal.
+	b, err := os.ReadFile(csvPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+	last := strings.Split(lines[len(lines)-1], ",")
+	var lastElapsed float64
+	if _, err := fmt.Sscan(last[1], &lastElapsed); err != nil {
+		t.Fatal(err)
+	}
+	if s.WallSeconds < 3.5 || lastElapsed < s.WallSeconds-0.5 {
+		t.Fatalf("sampling stopped at %.1fs of a %.1fs run (SIGINT at ~2s): dmon died with the Ctrl-C", lastElapsed, s.WallSeconds)
 	}
 }
