@@ -152,7 +152,7 @@ func TestRunFP64Scenario(t *testing.T) {
 	// The mock prints constants, so every statistic is exact.
 	g := entity(t, s, "GPU", "0")
 	want := map[string]float64{"sm_active": 0.85, "sm_occupancy": 0.40, "tensor_active": 0.02, "dram_active": 0.30,
-		"fp64_active": 0.20, "power_w": 250.5, "sm_clock_mhz": 2100, "fb_used_mib": 6000, "fb_total_mib": 46068,
+		"fp64_active": 0.20, "fp32_active": 0.50, "tensor_imma_active": 0, "tensor_hmma_active": 0.02, "power_w": 250.5, "sm_clock_mhz": 2100, "fb_used_mib": 6000, "fb_total_mib": 46068,
 		"gpu_util_pct": 100, "gpu_temp_c": 55}
 	if len(g.Fields) != len(want) {
 		t.Fatalf("fields %v", g.Fields)
@@ -161,7 +161,7 @@ func TestRunFP64Scenario(t *testing.T) {
 		st := g.Fields[name]
 		// Like real DCGM, the mock's first row is N/A for profiling fields.
 		wantMissing := 0
-		if strings.HasSuffix(name, "_active") || name == "sm_occupancy" {
+		if strings.HasSuffix(name, "_active") || name == "sm_occupancy" { // incl. tensor_*_active
 			wantMissing = 1
 		}
 		if st.N < 3 || st.Missing != wantMissing || !near(st.Mean, v, 1e-9) || st.Min != v || st.Max != v || st.P95 != v {
@@ -188,7 +188,7 @@ func TestRunFP64Scenario(t *testing.T) {
 		t.Fatalf("verdict %q", s.Verdict)
 	}
 
-	wantHdr := "timestamp,elapsed_s,entity_type,entity_id,sm_active,sm_occupancy,tensor_active,dram_active,fp64_active,power_w,sm_clock_mhz,fb_used_mib,fb_total_mib,gpu_util_pct,gpu_temp_c"
+	wantHdr := "timestamp,elapsed_s,entity_type,entity_id,sm_active,sm_occupancy,tensor_active,dram_active,fp64_active,fp32_active,tensor_imma_active,tensor_hmma_active,power_w,sm_clock_mhz,fb_used_mib,fb_total_mib,gpu_util_pct,gpu_temp_c"
 	if got := strings.Join(r.header, ","); got != wantHdr {
 		t.Fatalf("csv header\n got %s\nwant %s", got, wantHdr)
 	}
@@ -201,7 +201,7 @@ func TestRunFP64Scenario(t *testing.T) {
 		if i == 0 {
 			wantSM = ""
 		}
-		if len(row) != len(r.header) || row[2] != "GPU" || row[3] != "0" || row[4] != wantSM || row[9] != "250.5" {
+		if len(row) != len(r.header) || row[2] != "GPU" || row[3] != "0" || row[4] != wantSM || row[12] != "250.5" {
 			t.Fatalf("csv row %d: %v", i, row)
 		}
 	}
@@ -217,7 +217,7 @@ func TestRunStarvedPCIe(t *testing.T) {
 	if s.InstanceType != "g7e.4xlarge" || s.PCIeLineRateGBs != 63 {
 		t.Fatalf("instance %q line rate %v", s.InstanceType, s.PCIeLineRateGBs)
 	}
-	if !strings.Contains(strings.Join(r.header, ","), "fp64_active,pcie_tx_bps,pcie_rx_bps,power_w") {
+	if !strings.Contains(strings.Join(r.header, ","), "tensor_hmma_active,pcie_tx_bps,pcie_rx_bps,power_w") {
 		t.Fatalf("header %v", r.header)
 	}
 	if tx := entity(t, s, "GPU", "0").Fields["pcie_tx_bps"]; tx.Mean != 4.1e10 {

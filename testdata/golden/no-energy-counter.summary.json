@@ -45,6 +45,15 @@
           "min": 6000,
           "max": 6000
         },
+        "fp32_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0.5,
+          "p50": 0.5,
+          "p95": 0.5,
+          "min": 0.5,
+          "max": 0.5
+        },
         "fp64_active": {
           "n": 0,
           "missing": 1,
@@ -116,6 +125,24 @@
           "p95": 0.02,
           "min": 0.02,
           "max": 0.02
+        },
+        "tensor_hmma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
+        "tensor_imma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
         }
       }
     }
@@ -126,7 +153,7 @@
   "findings": [
     {
       "code": "fp64_required",
-      "text": "FP64 pipe active 0.20: FP64 is on the critical path. Needs A100, H100/H200 or B200 (1:2 FP64); L4, L40S, RTX PRO and B300 run FP64 at about 1:64."
+      "text": "FP64 active 0.20 (FP64 pipe 0.20, FP64 on tensor cores 0.00): FP64 is on the critical path. Needs A100, H100/H200 or B200 (1:2 FP64); L4, L40S, RTX PRO and B300 run FP64 at about 1:64."
     },
     {
       "code": "memory_headroom",

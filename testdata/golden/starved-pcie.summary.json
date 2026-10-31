@@ -46,6 +46,15 @@
           "min": 6000,
           "max": 6000
         },
+        "fp32_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
         "fp64_active": {
           "n": 0,
           "missing": 1,
@@ -135,6 +144,24 @@
           "p95": 0,
           "min": 0,
           "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
         }
       }
     }
@@ -154,7 +181,7 @@
     },
     {
       "code": "fp64_unused",
-      "text": "FP64 pipe active 0.000: the code does not need an FP64-class GPU."
+      "text": "FP64 active 0.000: the code does not need an FP64-class GPU."
     },
     {
       "code": "memory_headroom",
