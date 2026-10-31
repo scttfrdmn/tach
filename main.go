@@ -224,6 +224,11 @@ func cmdRun(argv []string) int {
 		var ee *exec.ExitError
 		if errors.As(err, &ee) {
 			exitCode = ee.ExitCode()
+			// ExitCode is -1 for a child killed by a signal; report it the
+			// way a shell does, as 128+N, so job scripts see e.g. 143.
+			if ws, ok := ee.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
+				exitCode = 128 + int(ws.Signal())
+			}
 		} else {
 			exitCode = 1
 		}

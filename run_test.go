@@ -445,3 +445,11 @@ func TestRunNoSamplesIsFlagged(t *testing.T) {
 		t.Fatalf("notes %q", s.Notes)
 	}
 }
+
+func TestRunSignalledChildExitCode(t *testing.T) {
+	t.Parallel()
+	r := runTach(t, nil, "--", "sh", "-c", "kill -TERM $$")
+	if r.code != 143 || r.sum.ExitCode != 143 {
+		t.Fatalf("exit %d / summary %d, want 143 (128+SIGTERM)", r.code, r.sum.ExitCode)
+	}
+}

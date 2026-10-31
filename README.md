@@ -44,7 +44,7 @@ On Ada (L4, L40S) some profiling fields cannot be sampled together; DCGM multipl
 
 Energy comes from the DCGM energy counter (`DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION`) as a start/stop delta per whole GPU. It includes anything else running on those GPUs. When the counter is unavailable tach integrates sampled power and records `energy_method: power-integral`.
 
-tach's exit code is the wrapped command's exit code.
+tach's exit code is the wrapped command's exit code; a command killed by signal N gives 128+N, as a shell reports it.
 
 ## Findings
 
