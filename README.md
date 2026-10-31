@@ -99,7 +99,19 @@ The link rate is an upper bound, not the rate a host can reach. On p5.4xlarge th
 
 ## Validation status
 
-v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, driven by `run_test.go`): parsing, profiling fallback, MIG entities, PCIe, energy, per-unit math, findings, exit codes. It has not yet run on real GPUs. The hardware validation (dmon format, idle and fallback, PCIe units, energy, FP64 and tensor findings, GROMACS, Ada multiplexing, MIG) is tracked in [#6](https://github.com/scttfrdmn/tach/issues/6).
+Measured with DCGM 4.7 on four GPUs: H100 (p5.4xlarge), RTX PRO 6000 Blackwell (g7e.2xlarge), L40S (g6e.xlarge) and GeForce RTX 5090.
+
+| Checked on hardware | Result |
+| --- | --- |
+| `dcgmi dmon` output and pipe behaviour | parser matches; no buffering on a pipe; exits ~0.5 s after SIGINT |
+| Idle run | `starved` |
+| PCIe fields | bytes/s including protocol overhead; `rx` host→device, `tx` device→host |
+| Energy counter | within 0.2–0.7% of integrated power on 60–180 s runs |
+| FP32 / BF16 / FP64 matmul | `tensor_idle` / no tensor finding / `fp64_required` (H100) or `fp64_unmeasured` (RTX PRO 6000, L40S, RTX 5090) |
+| Sampling blanks at 1 s and 200 ms | none on any of the four |
+| MIG 2× and 4× | per-instance rows; energy from the parent GPU |
+
+Raw captures are in `testdata/real/`, and `TestParseRealCaptures` and `busy_test.go` replay them. Still open: a real HPC code (GROMACS), and the device-only fallback on a GPU DCGM does not profile; every GPU measured was fully profiled. Tracked in [#6](https://github.com/scttfrdmn/tach/issues/6).
 
 ## License
 
