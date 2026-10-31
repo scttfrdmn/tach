@@ -1,4 +1,4 @@
-// Copyright 2026 Playground Logic LLC
+// Copyright 2026 Scott Friedman
 // SPDX-License-Identifier: Apache-2.0
 
 // tach wraps a command and records GPU utilization and efficiency over time

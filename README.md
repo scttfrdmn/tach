@@ -89,4 +89,6 @@ v0.1.0 is tested against a mock `dcgmi` (`testdata/mock-dcgmi`, `scripts/e2e.sh`
 
 ## License
 
-Apache-2.0. Copyright 2026 Playground Logic LLC.
+Copyright 2026 Scott Friedman. Licensed under the [Apache License, Version 2.0](LICENSE).
+
+Changes are recorded in [CHANGELOG.md](CHANGELOG.md), following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html); tach is on 0.x.

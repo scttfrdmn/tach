@@ -15,4 +15,4 @@
 - [ ] `make e2e` passes against the mock `dcgmi`
 - [ ] Summary JSON fields are only added, never renamed or removed
 - [ ] A fix to DCGM parsing or units is tested against captured output in `testdata/real/` where one exists
-- [ ] New `.go` files carry the `// SPDX-License-Identifier: Apache-2.0` header
+- [ ] New `.go` files carry the `// Copyright 2026 Scott Friedman` and `// SPDX-License-Identifier: Apache-2.0` header

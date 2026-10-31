@@ -43,7 +43,7 @@ nfpms:
     package_name: tach
     ids: [tach]
     formats: [deb, rpm]
-    maintainer: "Scott A Friedman <scttfrdmn@users.noreply.github.com>"
+    maintainer: "Scott Friedman <scttfrdmn@users.noreply.github.com>"
     description: "Wraps a command and records GPU utilization, efficiency, energy and cost per unit through NVIDIA DCGM."
     homepage: "https://github.com/scttfrdmn/tach"
     license: "Apache-2.0"

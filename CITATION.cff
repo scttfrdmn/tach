@@ -8,8 +8,7 @@ abstract: >-
 type: software
 authors:
   - family-names: Friedman
-    given-names: Scott A
-    affiliation: Playground Logic LLC
+    given-names: Scott
 version: 0.1.0
 license: Apache-2.0
 repository-code: "https://github.com/scttfrdmn/tach"

@@ -24,8 +24,8 @@ harmful, as described in the Contributor Covenant 2.1.
 
 ## Enforcement
 
-Instances of unacceptable behavior may be reported to the project maintainers at
-`conduct@example.com` *(placeholder — replace before v0.1.0)*. All complaints
+Instances of unacceptable behavior may be reported privately to the maintainer,
+Scott Friedman (GitHub: scttfrdmn). All complaints
 will be reviewed and investigated promptly and fairly. Maintainers are obligated
 to respect the privacy and security of the reporter of any incident.
 
