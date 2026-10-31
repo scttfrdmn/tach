@@ -1,0 +1,25 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 32.1s, exit 0, g7e.2xlarge
+GPU 0 (34 samples)
+  sm_active      mean 0.898879   p50 0.987      p95 0.987      max 0.987
+  sm_occupancy   mean 0.11203    p50 0.123      p95 0.123      max 0.123
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0894848  p50 0.098      p95 0.099      max 0.099
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  fp32_active    mean 0.652455   p50 0.716      p95 0.729      max 0.73
+  tensor_hmma_active mean 0          p50 0          p95 0          max 0
+  tensor_imma_active mean 0          p50 0          p95 0          max 0
+  power_w        mean 539.291    p50 599.963    p95 600.212    max 601.76
+  sm_clock_mhz   mean 2158.47    p50 2193.5     p95 2321.25    max 2422
+  fb_used_mib    mean 1300.82    p50 1426       p95 1426       max 1426
+  fb_total_mib   mean 97887      p50 97887      p95 97887      max 97887
+  gpu_util_pct   mean 89.0588    p50 100        p95 100        max 100
+  gpu_temp_c     mean 57.1471    p50 59.5       p95 65.35      max 66
+energy: 18346.2 J (counter)
+verdict (heuristic): tensor cores idle; oversized memory
+  - FP64 active 0.000: the code does not need an FP64-class GPU.
+  - Tensor pipe active 0.000 while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32.
+  - Peak memory 1.4 GiB of 95.6 GiB (1%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g7e.2xlarge-v2-matmul-fp32.csv.summary.json

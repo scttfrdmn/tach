@@ -170,7 +170,10 @@ const (
 	thFP64Used     = 0.05 // fp64_active mean at or above this: FP64 matters
 	thFP64Unused   = 0.01
 	thTensorIdle   = 0.05
-	thPipeBusy     = 0.50 // a pipe this busy is saturated: not small kernels
+	// A pipe this busy is saturated: not small kernels. 0.40, not 0.50: an
+	// RTX 5090 BF16 GEMM at ~218 TFLOPS (its peak) reads tensor_active 0.477
+	// (#29), and RTX PRO 6000 / L40S / H100 GEMMs read 0.65-0.97 (#11).
+	thPipeBusy     = 0.40
 	thUnattributed = 0.10 // busy SMs, every measured pipe below this: work no counter sees
 	thHeadroom     = 0.25 // peak memory below this fraction of installed
 	thPCIeHigh     = 0.60 // p95 of line rate

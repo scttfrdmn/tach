@@ -1,0 +1,169 @@
+{
+  "tach_version": "0.1.0-dev",
+  "label": "unknown-matmul-fp64",
+  "profile": "triage",
+  "command": [
+    "/home/scttfrdmn/tach-val/venv/bin/python",
+    "/home/scttfrdmn/tach-val/hw/matmul.py",
+    "--dtype",
+    "fp64",
+    "--seconds",
+    "60"
+  ],
+  "exit_code": 0,
+  "start": "2026-10-31T03:42:23Z",
+  "wall_seconds": 63.066101954,
+  "interval_ms": 1000,
+  "dcp": true,
+  "hostname": "ceres",
+  "csv": "/home/scttfrdmn/tach-val/real/unknown-matmul-fp64.csv",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 65,
+      "fields": {
+        "dram_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0.007796875000000006,
+          "p50": 0.008,
+          "p95": 0.008,
+          "min": 0.001,
+          "max": 0.008
+        },
+        "fb_total_mib": {
+          "n": 65,
+          "missing": 0,
+          "mean": 32607,
+          "p50": 32607,
+          "p95": 32607,
+          "min": 32607,
+          "max": 32607
+        },
+        "fb_used_mib": {
+          "n": 65,
+          "missing": 0,
+          "mean": 2077.153846153846,
+          "p50": 2143,
+          "p95": 2143,
+          "min": 3,
+          "max": 2143
+        },
+        "fp32_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "fp64_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 65,
+          "missing": 0,
+          "mean": 53.98461538461538,
+          "p50": 54,
+          "p95": 57,
+          "min": 47,
+          "max": 58
+        },
+        "gpu_util_pct": {
+          "n": 65,
+          "missing": 0,
+          "mean": 95.38461538461539,
+          "p50": 100,
+          "p95": 100,
+          "min": 0,
+          "max": 100
+        },
+        "power_w": {
+          "n": 65,
+          "missing": 0,
+          "mean": 204.7428615384615,
+          "p50": 209.352,
+          "p95": 212.746,
+          "min": 78.26,
+          "max": 214.024
+        },
+        "sm_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0.9560625000000007,
+          "p50": 0.98,
+          "p95": 0.99,
+          "min": 0,
+          "max": 0.99
+        },
+        "sm_clock_mhz": {
+          "n": 65,
+          "missing": 0,
+          "mean": 2916.3230769230768,
+          "p50": 2947,
+          "p95": 2962,
+          "min": 690,
+          "max": 2970
+        },
+        "sm_occupancy": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0.05968749999999991,
+          "p50": 0.061,
+          "p95": 0.062,
+          "min": 0,
+          "max": 0.062
+        },
+        "tensor_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 64,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      }
+    }
+  ],
+  "energy_joules": 13289.407,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "findings": [
+    {
+      "code": "fp64_unmeasured",
+      "text": "SMs active 0.96 but no measured pipe accounts for it (all below 0.10): this GPU's counters do not show FP64 work, so FP64 need cannot be judged here. Check the code's precision before choosing hardware."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 2.1 GiB of 31.8 GiB (7%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "FP64 need unknown on this GPU; oversized memory"
+}

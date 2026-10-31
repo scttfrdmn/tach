@@ -1,0 +1,191 @@
+{
+  "tach_version": "0.1.0-dev",
+  "label": "unknown-pcie",
+  "profile": "triage",
+  "command": [
+    "/tmp/tmp.XtDYjwJyCM/pcie_copy"
+  ],
+  "exit_code": 0,
+  "start": "2026-10-31T03:36:33Z",
+  "wall_seconds": 40.434739837,
+  "interval_ms": 1000,
+  "dcp": true,
+  "hostname": "ceres",
+  "csv": "/home/scttfrdmn/tach-val/real/unknown-pcie.csv",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 42,
+      "fields": {
+        "dram_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0.024487804878048792,
+          "p50": 0.024,
+          "p95": 0.026,
+          "min": 0.011,
+          "max": 0.029
+        },
+        "fb_total_mib": {
+          "n": 42,
+          "missing": 0,
+          "mean": 32607,
+          "p50": 32607,
+          "p95": 32607,
+          "min": 32607,
+          "max": 32607
+        },
+        "fb_used_mib": {
+          "n": 42,
+          "missing": 0,
+          "mean": 1460.142857142857,
+          "p50": 1533,
+          "p95": 1533,
+          "min": 3,
+          "max": 1533
+        },
+        "fp32_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "fp64_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 42,
+          "missing": 0,
+          "mean": 44.92857142857143,
+          "p50": 45,
+          "p95": 45,
+          "min": 42,
+          "max": 45
+        },
+        "gpu_util_pct": {
+          "n": 42,
+          "missing": 0,
+          "mean": 95.23809523809524,
+          "p50": 100,
+          "p95": 100,
+          "min": 0,
+          "max": 100
+        },
+        "pcie_rx_bps": {
+          "n": 41,
+          "missing": 1,
+          "mean": 24582241807.80488,
+          "p50": 18484662445,
+          "p95": 50341689641,
+          "min": 12577,
+          "max": 55374189922
+        },
+        "pcie_tx_bps": {
+          "n": 41,
+          "missing": 1,
+          "mean": 23635186234.560974,
+          "p50": 18910445442,
+          "p95": 46171743468,
+          "min": 1263717592,
+          "max": 46298089149
+        },
+        "power_w": {
+          "n": 42,
+          "missing": 0,
+          "mean": 98.36147619047618,
+          "p50": 102.15950000000001,
+          "p95": 102.9933,
+          "min": 5.882,
+          "max": 103.167
+        },
+        "sm_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0.000024390243902439026,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0.001
+        },
+        "sm_clock_mhz": {
+          "n": 42,
+          "missing": 0,
+          "mean": 2904.6190476190477,
+          "p50": 2970,
+          "p95": 2970,
+          "min": 217,
+          "max": 2977
+        },
+        "sm_occupancy": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 41,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      }
+    }
+  ],
+  "energy_joules": 4255.572,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "pcie_linerate_gbs": 63,
+  "findings": [
+    {
+      "code": "starved",
+      "text": "SM active averaged 0.00: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware."
+    },
+    {
+      "code": "pcie_bound",
+      "text": "PCIe reached 80% of line rate (p95) while SMs were idle: likely input-bound or host round-trips."
+    },
+    {
+      "code": "fp64_unused",
+      "text": "FP64 active 0.000: the code does not need an FP64-class GPU."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 1.5 GiB of 31.8 GiB (5%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "underutilized (PCIe-bound); oversized memory"
+}
