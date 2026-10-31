@@ -20,6 +20,10 @@ First version, not yet validated on real GPUs. Everything below was tested again
   `--pcie` adds PCIe TX/RX (fields 1009/1010) and raises the interval to 1 s.
 - **Device-level fallback** when profiling fields are unavailable, recorded as `dcp: false` and
   reported as such rather than as an idle GPU.
+- **dcgmi failures are not mistaken for a device-only run.** When `dcgmi` cannot read the GPUs
+  (typically no `nv-hostengine`), tach exits 1 before starting the command and prints dcgmi's
+  error. If the sampler records nothing during a run, tach warns, keeps dcgmi's message in
+  `notes`, and reports the `no_samples` finding with the verdict "no data".
 - **Energy** from the DCGM energy counter delta per whole GPU, falling back to integrating
   sampled power (`energy_method: counter | power-integral | none`).
 - **Heuristic findings and a verdict**: `starved`, `pcie_bound`, `low_occupancy`,

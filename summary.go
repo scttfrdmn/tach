@@ -181,6 +181,9 @@ func (s *Summary) analyze() {
 	tensor, okT := s.gpuMean("tensor_active")
 	fp64, okF64 := s.gpuMean("fp64_active")
 
+	if len(s.Entities) == 0 {
+		add("no_samples", "No samples were recorded: dcgmi dmon returned no data during the run, so there is nothing to analyse. See notes for dcgmi's message.")
+	}
 	if !s.DCP {
 		add("no_dcp", "Device-level metrics only. Run nv-hostengine as root on a datacenter GPU for SM, pipe and DRAM activity.")
 	}
@@ -244,12 +247,13 @@ func (s *Summary) pcieUtil() (float64, bool) {
 }
 
 func (s *Summary) verdict() string {
-	order := []string{"starved", "memory_bound", "low_occupancy", "tensor_idle", "fp64_required", "memory_headroom", "no_dcp"}
+	order := []string{"no_samples", "starved", "memory_bound", "low_occupancy", "tensor_idle", "fp64_required", "memory_headroom", "no_dcp"}
 	have := map[string]bool{}
 	for _, f := range s.Findings {
 		have[f.Code] = true
 	}
 	labels := map[string]string{
+		"no_samples":      "no data",
 		"starved":         "underutilized",
 		"memory_bound":    "memory-bound",
 		"low_occupancy":   "occupancy-limited",
