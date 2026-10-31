@@ -28,8 +28,8 @@ Plain `go build .` also works. `make test` and `make lint` run the checks CI run
 
 | Profile | DCGM profiling fields | Use |
 | --- | --- | --- |
-| `triage` (default) | sm_active, sm_occupancy, tensor_active, dram_active, fp64_active | Right-sizing: busy, tensor use, FP64 need, memory-bound |
-| `hpc` | sm_active, sm_occupancy, dram_active, fp64_active, fp32_active | Simulation codes: compute vs memory, FP64 vs FP32 |
+| `triage` (default) | sm_active, sm_occupancy, tensor_active, dram_active, fp64_active, fp32_active, tensor_imma_active, tensor_hmma_active | Right-sizing: busy, tensor use, FP64 need, memory-bound |
+| `hpc` | sm_active, sm_occupancy, dram_active, fp64_active, fp32_active, tensor_active, tensor_imma_active, tensor_hmma_active | Simulation codes: compute vs memory, FP64 vs FP32 |
 | `inference` | sm_active, dram_active, tensor_active, fp16_active | Inference engines: are the tensor cores fed |
 
 Every profile adds device fields: power_w, sm_clock_mhz, fb_used_mib, fb_total_mib, gpu_util_pct, gpu_temp_c. `--pcie` adds pcie_tx_bps and pcie_rx_bps (fields 1009/1010) and raises the interval to 1 s, because PCIe counters are a separate metric group.
@@ -50,15 +50,18 @@ tach's exit code is the wrapped command's exit code; a command killed by signal 
 
 Findings are heuristics over GPU-level means. The CSV is the ground truth.
 
+FP64 activity is `fp64_active` plus FP64 on tensor cores, estimated as `tensor_active` minus `tensor_hmma_active` and `tensor_imma_active`. On an H100 an FP64 DGEMM runs on the tensor cores and shows only there (`fp64_active` reads 0), while BF16, FP16 and TF32 count as hmma. GPUs that lack a field drop it; on such a GPU (the L40S has no `fp64_active`), FP64 need is reported only when it can be measured.
+
 | Code | Condition | Reading |
 | --- | --- | --- |
 | `starved` | sm_active < 0.30 | GPU mostly idle; check data loading and host-side work first |
 | `pcie_bound` | starved and PCIe p95 ≥ 60% of line rate | Input-bound or host-device round-trips |
-| `low_occupancy` | sm_active ≥ 0.50, sm_occupancy < 0.25 | Small kernels or batches; batch up or share the GPU (MPS/MIG) |
+| `low_occupancy` | sm_active ≥ 0.50, sm_occupancy < 0.25, no pipe ≥ 0.50 | Small kernels or batches; batch up or share the GPU (MPS/MIG). Not reported for saturated GEMMs, which run few warps per SM by design |
 | `memory_bound` | dram_active ≥ 0.50, all pipes < 0.30 | Choose on memory bandwidth, not FLOPs |
-| `fp64_required` | fp64_active ≥ 0.05 | Needs 1:2 FP64 (A100, H100/H200, B200) |
-| `fp64_unused` | fp64_active < 0.01 | No FP64-class GPU needed |
-| `tensor_idle` | tensor_active < 0.05 while busy, not FP64-bound, not `hpc` profile | Likely FP32; try BF16 or TF32 |
+| `fp64_required` | FP64 activity ≥ 0.05 | Needs 1:2 FP64 (A100, H100/H200, B200) |
+| `fp64_unused` | FP64 activity < 0.01, and FP64 is measurable on this GPU | No FP64-class GPU needed |
+| `fp64_unmeasured` | SMs ≥ 0.50 busy but every measured pipe < 0.10 | This GPU's counters do not show the work (FP64 on an RTX PRO 6000 or L40S); check the code's precision |
+| `tensor_idle` | tensor_active < 0.05 while busy, not FP64-bound or unmeasured, not `hpc` profile | Likely FP32; try BF16 or TF32 |
 | `memory_headroom` | peak fb_used < 25% of installed | A smaller GPU or MIG slice fits |
 | `no_dcp` | profiling fields unavailable | Device-level read only |
 | `no_samples` | dcgmi returned no data during the run | Nothing measured; dcgmi's message is in `notes` |

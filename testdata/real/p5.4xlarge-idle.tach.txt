@@ -1,0 +1,20 @@
+
+── tach 0.1.0-dev ── triage profile, 30.0s, exit 0, p5.4xlarge
+GPU 0 (31 samples)
+  sm_active      mean 0          p50 0          p95 0          max 0
+  sm_occupancy   mean 0          p50 0          p95 0          max 0
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0          p50 0          p95 0          max 0
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 133.507    p50 132.916    p95 139.29     max 140.278
+  sm_clock_mhz   mean 1830       p50 1830       p95 1830       max 1830
+  fb_used_mib    mean 0          p50 0          p95 0          max 0
+  fb_total_mib   mean 81559      p50 81559      p95 81559      max 81559
+  gpu_util_pct   mean 0          p50 0          p95 0          max 0
+  gpu_temp_c     mean 45.9677    p50 46         p95 50.5       max 52
+energy: 4125.6 J (counter)
+verdict (heuristic): underutilized; oversized memory
+  - SM active averaged 0.00: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.
+  - FP64 pipe active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 0.0 GiB of 79.6 GiB (0%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/p5.4xlarge-idle.csv.summary.json

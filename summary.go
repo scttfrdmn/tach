@@ -170,6 +170,8 @@ const (
 	thFP64Used     = 0.05 // fp64_active mean at or above this: FP64 matters
 	thFP64Unused   = 0.01
 	thTensorIdle   = 0.05
+	thPipeBusy     = 0.50 // a pipe this busy is saturated: not small kernels
+	thUnattributed = 0.10 // busy SMs, every measured pipe below this: work no counter sees
 	thHeadroom     = 0.25 // peak memory below this fraction of installed
 	thPCIeHigh     = 0.60 // p95 of line rate
 )
@@ -183,7 +185,16 @@ func (s *Summary) analyze() {
 	occ, okOcc := s.gpuMean("sm_occupancy")
 	dram, okDRAM := s.gpuMean("dram_active")
 	tensor, okT := s.gpuMean("tensor_active")
-	fp64, okF64 := s.gpuMean("fp64_active")
+	fp64Pipe, okF64 := s.gpuMean("fp64_active")
+	fp64Tensor, okF64T := s.fp64Tensor()
+	fp64 := fp64Pipe + fp64Tensor
+	pipe := s.maxPipe()
+	// Busy SMs that no measured pipe accounts for: on an RTX PRO 6000 an FP64
+	// DGEMM reads 0 on every pipe at sm_active 0.96 (#11).
+	// fp32_active must be measured: without it ordinary FP32 work (e.g. under
+	// the inference profile) would look unattributed.
+	_, okF32 := s.gpuMean("fp32_active")
+	unattributed := s.DCP && okSM && sm >= thBusy && okF32 && pipe < thUnattributed
 
 	if len(s.Entities) == 0 {
 		add("no_samples", "No samples were recorded: dcgmi dmon returned no data during the run, so there is nothing to analyse. See notes for dcgmi's message.")
@@ -198,24 +209,29 @@ func (s *Summary) analyze() {
 			add("pcie_bound", "PCIe reached %.0f%% of line rate (p95) while SMs were idle: likely input-bound or host round-trips.", tx*100)
 		}
 	}
-	if okSM && okOcc && sm >= thBusy && occ < thLowOcc {
-		add("low_occupancy", "SMs active (%.2f) but occupancy low (%.2f): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).", sm, occ)
+	// Large-tile GEMM kernels run few warps per SM by design; occupancy is
+	// only a problem when no pipe is saturated (#11: occupancy 0.06-0.15 at
+	// full BF16/FP32/FP64 throughput on all three GPUs measured).
+	if okSM && okOcc && sm >= thBusy && occ < thLowOcc && pipe < thPipeBusy && !unattributed {
+		add("low_occupancy", "SMs active (%.2f) but occupancy low (%.2f) and no compute pipe saturated: small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).", sm, occ)
 	}
-	if okDRAM && dram >= thMemBoundDRAM && s.maxPipe() < thPipeLow {
+	if okDRAM && dram >= thMemBoundDRAM && pipe < thPipeLow {
 		add("memory_bound", "DRAM active %.2f with compute pipes below %.2f: memory-bandwidth-bound. Choose GPUs on GB/s, not FLOPs.", dram, thPipeLow)
 	}
-	if okF64 {
-		switch {
-		case fp64 >= thFP64Used:
-			add("fp64_required", "FP64 pipe active %.2f: FP64 is on the critical path. Needs A100, H100/H200 or B200 (1:2 FP64); L4, L40S, RTX PRO and B300 run FP64 at about 1:64.", fp64)
-		case fp64 < thFP64Unused:
-			add("fp64_unused", "FP64 pipe active %.3f: the code does not need an FP64-class GPU.", fp64)
-		}
+	fp64Required := okF64 && fp64 >= thFP64Used
+	switch {
+	case !s.wantsFP64():
+	case fp64Required:
+		add("fp64_required", "FP64 active %.2f (FP64 pipe %.2f, FP64 on tensor cores %.2f): FP64 is on the critical path. Needs A100, H100/H200 or B200 (1:2 FP64); L4, L40S, RTX PRO and B300 run FP64 at about 1:64.", fp64, fp64Pipe, fp64Tensor)
+	case unattributed:
+		add("fp64_unmeasured", "SMs active %.2f but no measured pipe accounts for it (all below %.2f): this GPU's counters do not show FP64 work, so FP64 need cannot be judged here. Check the code's precision before choosing hardware.", sm, thUnattributed)
+	case okF64 && fp64 < thFP64Unused && (okF64T || !okT || tensor < thTensorIdle):
+		// Without the imma/hmma split, busy tensor cores could be FP64 (DMMA).
+		add("fp64_unused", "FP64 active %.3f: the code does not need an FP64-class GPU.", fp64)
 	}
 	// Low tensor activity only matters for AI work; an FP64 code with idle
 	// tensor cores is expected, not a finding.
-	fp64Bound := okF64 && fp64 >= thFP64Used
-	if okT && okSM && sm >= thStarved && tensor < thTensorIdle && s.Profile != "hpc" && !fp64Bound {
+	if okT && okSM && sm >= thStarved && tensor < thTensorIdle && s.Profile != "hpc" && !fp64Required && !unattributed {
 		add("tensor_idle", "Tensor pipe active %.3f while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32.", tensor)
 	}
 	if used, total, ok := s.peakMemory(); ok && total > 0 && used/total < thHeadroom {
@@ -223,6 +239,20 @@ func (s *Summary) analyze() {
 	}
 	s.Findings = fs
 	s.Verdict = s.verdict()
+}
+
+// fp64Tensor estimates FP64 work on tensor cores (DMMA): tensor activity that
+// neither integer (imma) nor half/bf16/tf32 (hmma) matrix work claims. On an
+// H100, FP64 DGEMM reads tensor_active 0.97 with hmma and imma both 0, and
+// BF16/TF32 read hmma = tensor_active (#11). ok is false without the split.
+func (s *Summary) fp64Tensor() (float64, bool) {
+	t, ok1 := s.gpuMean("tensor_active")
+	h, ok2 := s.gpuMean("tensor_hmma_active")
+	i, ok3 := s.gpuMean("tensor_imma_active")
+	if !ok1 || !ok2 || !ok3 {
+		return 0, false
+	}
+	return math.Max(0, t-h-i), true
 }
 
 func (s *Summary) maxPipe() float64 {
@@ -233,6 +263,20 @@ func (s *Summary) maxPipe() float64 {
 		}
 	}
 	return m
+}
+
+// wantsFP64 reports whether this run asked about FP64: profiling was on and
+// the profile includes fp64_active (whether or not the GPU supports it).
+func (s *Summary) wantsFP64() bool {
+	if !s.DCP {
+		return false
+	}
+	for _, f := range profiles[s.Profile] {
+		if f.Name == "fp64_active" {
+			return true
+		}
+	}
+	return false
 }
 
 // pcieUtil returns the larger of TX/RX p95 as a fraction of line rate.
@@ -251,7 +295,7 @@ func (s *Summary) pcieUtil() (float64, bool) {
 }
 
 func (s *Summary) verdict() string {
-	order := []string{"no_samples", "starved", "memory_bound", "low_occupancy", "tensor_idle", "fp64_required", "memory_headroom", "no_dcp"}
+	order := []string{"no_samples", "starved", "memory_bound", "low_occupancy", "tensor_idle", "fp64_required", "fp64_unmeasured", "memory_headroom", "no_dcp"}
 	have := map[string]bool{}
 	for _, f := range s.Findings {
 		have[f.Code] = true
@@ -263,6 +307,7 @@ func (s *Summary) verdict() string {
 		"low_occupancy":   "occupancy-limited",
 		"tensor_idle":     "tensor cores idle",
 		"fp64_required":   "FP64-bound hardware choice",
+		"fp64_unmeasured": "FP64 need unknown on this GPU",
 		"memory_headroom": "oversized memory",
 		"no_dcp":          "device-level only",
 	}

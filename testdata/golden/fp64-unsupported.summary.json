@@ -45,6 +45,15 @@
           "min": 6000,
           "max": 6000
         },
+        "fp32_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0.5,
+          "p50": 0.5,
+          "p95": 0.5,
+          "min": 0.5,
+          "max": 0.5
+        },
         "gpu_temp_c": {
           "n": 0,
           "missing": 0,
@@ -107,6 +116,24 @@
           "p95": 0.02,
           "min": 0.02,
           "max": 0.02
+        },
+        "tensor_hmma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
+        "tensor_imma_active": {
+          "n": 0,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
         }
       }
     }

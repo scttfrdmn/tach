@@ -396,7 +396,7 @@ func printHuman(w *os.File, s *Summary, path string) {
 
 // orderedNames lists fields in a stable, readable order.
 func orderedNames(m map[string]stat) []string {
-	order := []string{"sm_active", "sm_occupancy", "tensor_active", "dram_active", "fp64_active", "fp32_active", "fp16_active", "pcie_tx_bps", "pcie_rx_bps", "power_w", "sm_clock_mhz", "fb_used_mib", "fb_total_mib", "gpu_util_pct", "gpu_temp_c"}
+	order := []string{"sm_active", "sm_occupancy", "tensor_active", "dram_active", "fp64_active", "fp32_active", "fp16_active", "tensor_hmma_active", "tensor_imma_active", "pcie_tx_bps", "pcie_rx_bps", "power_w", "sm_clock_mhz", "fb_used_mib", "fb_total_mib", "gpu_util_pct", "gpu_temp_c"}
 	var out []string
 	for _, n := range order {
 		if _, ok := m[n]; ok {

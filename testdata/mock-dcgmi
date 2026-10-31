@@ -54,12 +54,13 @@ scen="${MOCK_SCENARIO:-fp64}"
 efile="${MOCK_ENERGY:-/tmp/mock_energy}"
 val() {
   local id=$1 ent=$2
-  if [ "$id" -ge 1001 ] && [ "$id" -le 1012 ] && [ "${MOCK_NOPROF:-0}" = "1" ]; then echo N/A; return; fi
+  if [ "$id" -ge 1001 ] && [ "$id" -le 1099 ] && [ "${MOCK_NOPROF:-0}" = "1" ]; then echo N/A; return; fi
   case "$scen:$id" in
     starved:1002) echo 0.12;; starved:1003) echo 0.05;; starved:1004) echo 0.00;; starved:1005) echo 0.04;;
-    starved:1006) echo 0.000;; starved:1009) echo 4.1e10;; starved:1010) echo 5.0e9;;
+    starved:1006) echo 0.000;; starved:1007) echo 0.02;; starved:1014) echo 0.00;; starved:1009) echo 4.1e10;; starved:1010) echo 5.0e9;;
     ai_fp32:1002) echo 0.81;; ai_fp32:1003) echo 0.45;; ai_fp32:1004) echo 0.01;; ai_fp32:1005) echo 0.35;;
-    ai_fp32:1006) echo 0.000;;
+    ai_fp32:1006) echo 0.000;; ai_fp32:1014) echo 0.01;;
+    *:1013) echo 0.00;; *:1014) echo 0.02;;
     *:1002) echo 0.85;; *:1003) echo 0.40;; *:1004) echo 0.02;; *:1005) echo 0.30;; *:1006) echo 0.20;;
     *:1007) echo 0.50;; *:1008) echo 0.00;; *:1009) echo 2.0e9;; *:1010) echo 5.0e9;;
     *:155) echo 250.5;; *:100) echo 2100;; *:252) echo 6000;; *:250) echo 46068;; *:203) echo 100;; *:150) echo 55;;
@@ -77,12 +78,13 @@ tag() {
   case $1 in
     1001) echo GRACT;; 1002) echo SMACT;; 1003) echo SMOCC;; 1004) echo TENSO;; 1005) echo DRAMA;;
     1006) echo FP64A;; 1007) echo FP32A;; 1008) echo FP16A;; 1009) echo PCITX;; 1010) echo PCIRX;;
+    1013) echo TIMMA;; 1014) echo THMMA;; 1015) echo TDFMA;;
     100) echo SMCLK;; 150) echo TMPTR;; 155) echo POWER;; 156) echo TOTEC;; 203) echo GPUTL;;
     250) echo FBTTL;; 252) echo FBUSD;; *) echo "F$1";;
   esac
 }
 unit() { case $1 in 155) echo W;; 156) echo mJ;; *) echo;; esac; }
-width() { if [ "$1" -ge 1001 ] && [ "$1" -le 1012 ]; then echo 13; elif [ "$1" = 156 ]; then echo 24; else echo 18; fi; }
+width() { if [ "$1" -ge 1001 ] && [ "$1" -le 1099 ]; then echo 13; elif [ "$1" = 156 ]; then echo 24; else echo 18; fi; }
 hdr=$(printf '%-16s' '#Entity'); ids_line=$(printf '%-16s' 'ID')
 for i in "${F[@]}"; do
   w=$(width "$i")
@@ -108,7 +110,7 @@ while :; do
       if [ "$i" = 156 ] && [ "${e%% *}" != "GPU" ]; then v=$(cat "${MOCK_ENERGY:-/tmp/mock_energy}" 2>/dev/null || echo 1000000)
       # Real DCGM prints N/A for profiling fields in the first row after
       # the watch is created.
-      elif [ "$n" -eq 0 ] && [ "$i" -ge 1001 ] && [ "$i" -le 1012 ]; then v=N/A
+      elif [ "$n" -eq 0 ] && [ "$i" -ge 1001 ] && [ "$i" -le 1099 ]; then v=N/A
       else v=$(val "$i" "$e"); fi
       line="$line$(printf "%-${w}s" "$v")"
     done
