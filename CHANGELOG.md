@@ -31,13 +31,19 @@ First version, not yet validated on real GPUs. Everything below was tested again
   error. If the sampler records nothing during a run, tach warns, keeps dcgmi's message in
   `notes`, and reports the `no_samples` finding with the verdict "no data".
 - **Energy** from the DCGM energy counter delta per whole GPU, falling back to integrating
-  sampled power (`energy_method: counter | power-integral | none`).
+  sampled power (`energy_method: counter | power-integral | none`). The counter is read just
+  before the command starts and just after it exits, so short runs are not inflated by tach's
+  own startup and closing sample.
 - **Heuristic findings and a verdict**: `starved`, `pcie_bound`, `low_occupancy`,
   `memory_bound`, `fp64_required`, `fp64_unused`, `fp64_unmeasured`, `tensor_idle`,
   `memory_headroom`, `no_dcp`, `no_samples`. FP64 activity includes FP64 on tensor cores
   (measured on H100: DGEMM shows only as tensor activity no hmma/imma counter claims), and
   `low_occupancy` is not reported for saturated GEMMs. Thresholds were checked against
   FP32/BF16/FP64 matmul runs on H100, RTX PRO 6000, L40S and GeForce RTX 5090.
+- **Findings judge the busy samples.** `starved` uses the whole run and says what share of
+  samples was busy; pipe and precision findings use the samples with sm_active ≥ 0.30, so a
+  long load or staging phase no longer turns an FP64 job into `fp64_unused`. Summaries gain
+  `busy_fraction` and `busy_fields` per entity.
 - **Per-unit figures** with `--work`, `--unit` and `--price-per-hour`: seconds, joules and
   dollars per unit. `tach annotate` adds them to an existing summary after the run.
 - **`tach report`** compares runs as a Markdown or CSV table, sorted by cost per unit, then

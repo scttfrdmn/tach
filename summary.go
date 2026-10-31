@@ -60,6 +60,14 @@ type EntitySummary struct {
 	ID      string          `json:"id"`
 	Samples int             `json:"samples"`
 	Fields  map[string]stat `json:"fields"`
+
+	// BusyFraction is the share of samples with sm_active at or above
+	// thStarved; BusyFields are the field stats over just those samples.
+	// Pipe and precision findings are judged on the busy samples, so a job
+	// that spends most of its time loading or staging is still read for
+	// what it does on the GPU (#55). Absent without sm_active.
+	BusyFraction *float64        `json:"busy_fraction,omitempty"`
+	BusyFields   map[string]stat `json:"busy_fields,omitempty"`
 }
 
 type PerUnit struct {
@@ -114,6 +122,38 @@ func writeSummary(path string, s *Summary) error {
 // used when present; otherwise MIG instances.
 func (s *Summary) gpuMean(name string) (float64, bool) {
 	return s.aggregate(name, func(st stat) float64 { return st.Mean })
+}
+
+// workMean averages a field over the busy samples of the measured entities,
+// falling back to the whole run when no entity has busy samples.
+func (s *Summary) workMean(name string) (float64, bool) {
+	ents := s.primaryEntities()
+	sum, n := 0.0, 0
+	for _, e := range ents {
+		if st, ok := e.BusyFields[name]; ok && st.N > 0 {
+			sum += st.Mean
+			n++
+		}
+	}
+	if n == 0 {
+		return s.gpuMean(name)
+	}
+	return sum / float64(n), true
+}
+
+// busyFraction averages the entities' busy fractions.
+func (s *Summary) busyFraction() (float64, bool) {
+	sum, n := 0.0, 0
+	for _, e := range s.primaryEntities() {
+		if e.BusyFraction != nil {
+			sum += *e.BusyFraction
+			n++
+		}
+	}
+	if n == 0 {
+		return 0, false
+	}
+	return sum / float64(n), true
 }
 
 func (s *Summary) gpuP95(name string) (float64, bool) {
@@ -188,11 +228,13 @@ func (s *Summary) analyze() {
 	add := func(code, format string, a ...any) {
 		fs = append(fs, Finding{code, fmt.Sprintf(format, a...)})
 	}
-	sm, okSM := s.gpuMean("sm_active")
-	occ, okOcc := s.gpuMean("sm_occupancy")
-	dram, okDRAM := s.gpuMean("dram_active")
-	tensor, okT := s.gpuMean("tensor_active")
-	fp64Pipe, okF64 := s.gpuMean("fp64_active")
+	// starved judges the whole run; everything else judges the busy samples.
+	runSM, okSM := s.gpuMean("sm_active")
+	sm, _ := s.workMean("sm_active")
+	occ, okOcc := s.workMean("sm_occupancy")
+	dram, okDRAM := s.workMean("dram_active")
+	tensor, okT := s.workMean("tensor_active")
+	fp64Pipe, okF64 := s.workMean("fp64_active")
 	fp64Tensor, okF64T := s.fp64Tensor()
 	fp64 := fp64Pipe + fp64Tensor
 	pipe := s.maxPipe()
@@ -200,7 +242,7 @@ func (s *Summary) analyze() {
 	// DGEMM reads 0 on every pipe at sm_active 0.96 (#11).
 	// fp32_active must be measured: without it ordinary FP32 work (e.g. under
 	// the inference profile) would look unattributed.
-	_, okF32 := s.gpuMean("fp32_active")
+	_, okF32 := s.workMean("fp32_active")
 	unattributed := s.DCP && okSM && sm >= thBusy && okF32 && pipe < thUnattributed
 
 	if len(s.Entities) == 0 {
@@ -210,8 +252,12 @@ func (s *Summary) analyze() {
 		add("no_dcp", "Device-level metrics only. Run nv-hostengine as root on a datacenter GPU for SM, pipe and DRAM activity.")
 	}
 
-	if okSM && sm < thStarved {
-		add("starved", "SM active averaged %.2f: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.", sm)
+	if okSM && runSM < thStarved {
+		busy := ""
+		if f, ok := s.busyFraction(); ok && f > 0 {
+			busy = fmt.Sprintf(" It was busy in %.0f%% of samples; the other findings describe those.", 100*f)
+		}
+		add("starved", "SM active averaged %.2f: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.%s", runSM, busy)
 		if tx, ok := s.pcieUtil(); ok && tx >= thPCIeHigh {
 			add("pcie_bound", "PCIe reached %.0f%% of line rate (p95) while SMs were idle: likely input-bound or host round-trips.", tx*100)
 		}
@@ -253,9 +299,9 @@ func (s *Summary) analyze() {
 // H100, FP64 DGEMM reads tensor_active 0.97 with hmma and imma both 0, and
 // BF16/TF32 read hmma = tensor_active (#11). ok is false without the split.
 func (s *Summary) fp64Tensor() (float64, bool) {
-	t, ok1 := s.gpuMean("tensor_active")
-	h, ok2 := s.gpuMean("tensor_hmma_active")
-	i, ok3 := s.gpuMean("tensor_imma_active")
+	t, ok1 := s.workMean("tensor_active")
+	h, ok2 := s.workMean("tensor_hmma_active")
+	i, ok3 := s.workMean("tensor_imma_active")
 	if !ok1 || !ok2 || !ok3 {
 		return 0, false
 	}
@@ -265,7 +311,7 @@ func (s *Summary) fp64Tensor() (float64, bool) {
 func (s *Summary) maxPipe() float64 {
 	m := 0.0
 	for _, n := range []string{"tensor_active", "fp64_active", "fp32_active", "fp16_active"} {
-		if v, ok := s.gpuMean(n); ok && v > m {
+		if v, ok := s.workMean(n); ok && v > m {
 			m = v
 		}
 	}
@@ -337,6 +383,43 @@ func (s *Summary) verdict() string {
 	return strings.Join(parts, "; ")
 }
 
+// busyStats returns the share of samples whose sm_active (field index smi) is
+// at or above thStarved, and per-field stats over those samples only. Samples
+// with sm_active missing count toward neither side.
+func busyStats(fields []field, sr *series, smi int) (*float64, map[string]stat) {
+	var busy []int
+	measured := 0
+	for j, v := range sr.Vals[smi] {
+		if math.IsNaN(v) {
+			continue
+		}
+		measured++
+		if v >= thStarved {
+			busy = append(busy, j)
+		}
+	}
+	if measured == 0 {
+		return nil, nil
+	}
+	frac := float64(len(busy)) / float64(measured)
+	if len(busy) == 0 {
+		return &frac, nil
+	}
+	out := map[string]stat{}
+	for i, f := range fields {
+		vals := make([]float64, 0, len(busy))
+		for _, j := range busy {
+			if j < len(sr.Vals[i]) {
+				vals = append(vals, sr.Vals[i][j])
+			}
+		}
+		if st, ok := summarize(vals); ok {
+			out[f.Name] = st
+		}
+	}
+	return &frac, out
+}
+
 // entitySummaries builds per-entity stats from collected samples.
 func entitySummaries(fields []field, data map[string]*series) []EntitySummary {
 	keys := make([]string, 0, len(data))
@@ -361,12 +444,19 @@ func entitySummaries(fields []field, data map[string]*series) []EntitySummary {
 	for _, k := range keys {
 		sr := data[k]
 		es := EntitySummary{Type: sr.EntType, ID: sr.EntID, Samples: len(sr.T), Fields: map[string]stat{}}
+		smi := -1
 		for i, f := range fields {
+			if f.Name == "sm_active" {
+				smi = i
+			}
 			if st, ok := summarize(sr.Vals[i]); ok {
 				es.Fields[f.Name] = st
 			} else if st.Missing > 0 {
 				es.Fields[f.Name] = st
 			}
+		}
+		if smi >= 0 {
+			es.BusyFraction, es.BusyFields = busyStats(fields, sr, smi)
 		}
 		out = append(out, es)
 	}

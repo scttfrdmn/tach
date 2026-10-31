@@ -163,7 +163,8 @@
           "min": 0,
           "max": 0
         }
-      }
+      },
+      "busy_fraction": 0
     }
   ],
   "energy_joules": 500,

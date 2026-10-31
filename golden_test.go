@@ -32,6 +32,10 @@ func normalize(s *Summary) {
 			st.N, st.Mean = 0, roundSig(st.Mean)
 			s.Entities[i].Fields[k] = st
 		}
+		for k, st := range s.Entities[i].BusyFields {
+			st.N, st.Mean = 0, roundSig(st.Mean)
+			s.Entities[i].BusyFields[k] = st
+		}
 	}
 	if s.PerUnit != nil {
 		s.PerUnit.Seconds, s.PerUnit.Dollars = 0, 0
