@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   # Branch CI is the shared gate — the exact set the release gate runs on a tag
-  # (vet, lint, test -race, govulncheck, e2e, fuzz, dual-arch build).
+  # (vet, lint, test -race, govulncheck, fuzz, dual-arch build).
   gate:
     uses: ./.github/workflows/gate.yml

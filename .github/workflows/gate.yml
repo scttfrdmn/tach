@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    name: vet, lint, test, e2e
+    name: vet, lint, test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -29,16 +29,15 @@ jobs:
           # Must track the Go in go.mod: older releases cannot read go1.27's
           # export data and fail every package with a typecheck error.
           version: v2.14.0
+      # Includes the integration tests that run tach against testdata/mock-dcgmi.
+      # Real-hardware validation is tracked in issues; captures live under
+      # testdata/real/.
       - name: go test -race
         run: go test -race ./...
       - name: govulncheck
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
-      # Against testdata/mock-dcgmi. Real-hardware validation is tracked in
-      # issues and its captures live under testdata/real/.
-      - name: e2e (mock dcgmi)
-        run: bash scripts/e2e.sh
       - name: fuzz the dmon line parser (30s; committed corpus also runs above)
         run: go test -run '^$' -fuzz 'FuzzParseDmonLine$' -fuzztime 30s .
 
