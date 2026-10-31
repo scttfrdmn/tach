@@ -1,0 +1,22 @@
+
+### dcgmi --version
+### at 2026-10-31T02:04:05.319058992Z
+
+dcgmi  version: 4.7.0
+
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 -c 5   (stdout is a file)
+### at 2026-10-31T02:04:05.323331255Z
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+ID                                                                                                                    W                 mJ                     
+Error setting watches. Result: -6: Feature not supported
+
+exit=250
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 -c 5 | cat   (stdout is a pipe)
+### at 2026-10-31T02:04:05.342622467Z
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+ID                                                                                                                    W                 mJ                     
+Error setting watches. Result: -6: Feature not supported
+
+exit=250

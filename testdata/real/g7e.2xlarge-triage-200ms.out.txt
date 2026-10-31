@@ -1,0 +1,2 @@
+dtype=bf16 size=8192 device=cuda gpu="NVIDIA RTX PRO 6000 Blackwell Server Edition" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=8192 iters=21822 seconds=60.001 tflops=399.888 start=1793412861.493578 end=1793412921.494251

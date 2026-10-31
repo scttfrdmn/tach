@@ -1,0 +1,147 @@
+{
+  "tach_version": "0.1.0-dev",
+  "label": "g7e.2xlarge-triage-1s",
+  "profile": "triage",
+  "command": [
+    "/opt/pytorch/bin/python",
+    "/home/scttfrdmn/hw/matmul.py",
+    "--dtype",
+    "bf16",
+    "--seconds",
+    "60"
+  ],
+  "exit_code": 0,
+  "start": "2026-10-31T02:13:17Z",
+  "wall_seconds": 61.463781426,
+  "interval_ms": 1000,
+  "dcp": true,
+  "instance_type": "g7e.2xlarge",
+  "hostname": "ip-172-31-47-219",
+  "csv": "/home/scttfrdmn/real/g7e.2xlarge-triage-1s.csv",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 63,
+      "fields": {
+        "dram_active": {
+          "n": 61,
+          "missing": 2,
+          "mean": 0.18444262295081984,
+          "p50": 0.187,
+          "p95": 0.189,
+          "min": 0.06,
+          "max": 0.19
+        },
+        "fb_total_mib": {
+          "n": 63,
+          "missing": 0,
+          "mean": 97887,
+          "p50": 97887,
+          "p95": 97887,
+          "min": 97887,
+          "max": 97887
+        },
+        "fb_used_mib": {
+          "n": 63,
+          "missing": 0,
+          "mean": 992.3809523809524,
+          "p50": 1042,
+          "p95": 1042,
+          "min": 0,
+          "max": 1042
+        },
+        "fp64_active": {
+          "n": 61,
+          "missing": 2,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 63,
+          "missing": 0,
+          "mean": 61.74603174603175,
+          "p50": 64,
+          "p95": 68,
+          "min": 33,
+          "max": 69
+        },
+        "gpu_util_pct": {
+          "n": 63,
+          "missing": 0,
+          "mean": 92.71428571428571,
+          "p50": 99,
+          "p95": 99,
+          "min": 0,
+          "max": 99
+        },
+        "power_w": {
+          "n": 63,
+          "missing": 0,
+          "mean": 568.2801111111111,
+          "p50": 599.937,
+          "p95": 600.1021000000001,
+          "min": 49.7,
+          "max": 600.22
+        },
+        "sm_active": {
+          "n": 62,
+          "missing": 1,
+          "mean": 0.9500161290322567,
+          "p50": 0.98,
+          "p95": 0.98,
+          "min": 0,
+          "max": 0.98
+        },
+        "sm_clock_mhz": {
+          "n": 63,
+          "missing": 0,
+          "mean": 2186.746031746032,
+          "p50": 2175,
+          "p95": 2211.3,
+          "min": 2160,
+          "max": 2422
+        },
+        "sm_occupancy": {
+          "n": 61,
+          "missing": 2,
+          "mean": 0.12022950819672122,
+          "p50": 0.122,
+          "p95": 0.122,
+          "min": 0.038,
+          "max": 0.122
+        },
+        "tensor_active": {
+          "n": 61,
+          "missing": 2,
+          "mean": 0.9467049180327866,
+          "p50": 0.961,
+          "p95": 0.977,
+          "min": 0.284,
+          "max": 0.979
+        }
+      }
+    }
+  ],
+  "energy_joules": 36251.267,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "findings": [
+    {
+      "code": "low_occupancy",
+      "text": "SMs active (0.95) but occupancy low (0.12): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG)."
+    },
+    {
+      "code": "fp64_unused",
+      "text": "FP64 pipe active 0.000: the code does not need an FP64-class GPU."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 1.0 GiB of 95.6 GiB (1%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "occupancy-limited; oversized memory"
+}

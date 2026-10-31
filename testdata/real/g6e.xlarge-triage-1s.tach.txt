@@ -1,0 +1,21 @@
+tach: DCGM on this GPU does not support fp64_active; not recorded, and findings that need it are skipped.
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 61.8s, exit 0, g6e.xlarge
+GPU 0 (63 samples)
+  sm_active      mean 0.941143   p50 0.988      p95 0.989      max 0.989
+  sm_occupancy   mean 0.0780952  p50 0.082      p95 0.082      max 0.082
+  tensor_active  mean 0.919492   p50 0.965      p95 0.966      max 0.967
+  dram_active    mean 0.284905   p50 0.298      p95 0.3028     max 0.312
+  power_w        mean 338.072    p50 349.737    p95 350.579    max 352.042
+  sm_clock_mhz   mean 1246.9     p50 1200       p95 1258.5     max 2040
+  fb_used_mib    mean 815.238    p50 856        p95 856        max 856
+  fb_total_mib   mean 46068      p50 46068      p95 46068      max 46068
+  gpu_util_pct   mean 95.2222    p50 100        p95 100        max 100
+  gpu_temp_c     mean 69.4444    p50 70         p95 71         max 71
+energy: 21270.6 J (counter)
+verdict (heuristic): occupancy-limited; oversized memory
+  - SMs active (0.94) but occupancy low (0.08): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).
+  - Peak memory 0.8 GiB of 45.0 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/g6e.xlarge-triage-1s.csv.summary.json

@@ -1,0 +1,9 @@
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 -c 10 | timestamper   (column 1: arrival, Unix s)
+### at 2026-10-31T02:04:05.356399097Z
+start 1793412245.359104742
+1793412245.366115820 #Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+1793412245.370145747 ID                                                                                                                    W                 mJ                     
+1793412245.373551869 Error setting watches. Result: -6: Feature not supported
+1793412245.376978951 
+end 1793412245.380757021 exit=250

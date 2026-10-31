@@ -1,0 +1,18 @@
+
+### dcgmi dmon -e 1002,1003,1004,1005,1006 -d 1000 -c 30   (load: /opt/pytorch/bin/python /home/scttfrdmn/hw/matmul.py  --dtype bf16 --seconds 90)
+### at 2026-10-31T02:04:23.981124946Z
+#Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        
+ID                                                                               
+Error setting watches. Result: -6: Feature not supported
+
+exit=250
+
+### N/A per column
+### at 2026-10-31T02:04:23.992485872Z
+rows=0
+
+### load output
+### at 2026-10-31T02:04:24.155007570Z
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+dtype=bf16 size=8192 device=cuda gpu="NVIDIA L40S" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True

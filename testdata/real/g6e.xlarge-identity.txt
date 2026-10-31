@@ -1,0 +1,106 @@
+
+### dcgmi --version
+### at 2026-10-31T02:04:05.192404436Z
+
+dcgmi  version: 4.7.0
+
+
+### nvidia-smi -q (head)
+### at 2026-10-31T02:04:05.196895354Z
+
+==============NVSMI LOG==============
+
+Timestamp                                              : Sat Oct 31 02:04:05 2026
+Driver Version                                         : 595.112.07
+CUDA Version                                           : 13.2
+
+Attached GPUs                                          : 1
+GPU 00000000:30:00.0
+    Product Name                                       : NVIDIA L40S
+    Product Brand                                      : NVIDIA
+    Product Architecture                               : Ada Lovelace
+    Display Mode                                       : Requested functionality has been deprecated
+    Display Attached                                   : Yes
+    Display Active                                     : Disabled
+    Persistence Mode                                   : Enabled
+    Addressing Mode                                    : HMM
+    MIG Mode
+        Current                                        : N/A
+        Pending                                        : N/A
+    Accounting Mode                                    : Disabled
+    Accounting Mode Buffer Size                        : 4000
+    Driver Model
+        Current                                        : N/A
+        Pending                                        : N/A
+    Serial Number                                      : 1790126103714
+    GPU UUID                                           : GPU-e083be76-afe4-5ca8-2d56-2d6c3a9ed408
+    GPU PDI                                            : 0x6e8faa4c743d3e5b
+    Minor Number                                       : 0
+    VBIOS Version                                      : 95.02.66.00.15
+    MultiGPU Board                                     : No
+    Board ID                                           : 0x3000
+    Board Part Number                                  : 900-2G133-A880-000
+    GPU Part Number                                    : 26B9-896-A1
+    FRU Part Number                                    : N/A
+    Platform Info
+        Chassis Serial Number                          : N/A
+        Slot Number                                    : N/A
+        Tray Index                                     : N/A
+        Host ID                                        : N/A
+        Peer Type                                      : N/A
+        Module Id                                      : 1
+        GPU Fabric GUID                                : N/A
+    Inforom Version
+        Image Version                                  : G133.0242.00.03
+
+### nvidia-smi -L
+### at 2026-10-31T02:04:05.224955787Z
+GPU 0: NVIDIA L40S (UUID: GPU-e083be76-afe4-5ca8-2d56-2d6c3a9ed408)
+
+### dcgmi discovery -l
+### at 2026-10-31T02:04:05.248314396Z
+1 GPU found (Active).
++--------+----------------------------------------------------------------------+
+| GPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
+| 0      | Name: NVIDIA L40S                                                    |
+|        | PCI Bus ID: 00000000:30:00.0                                         |
+|        | Device UUID: GPU-e083be76-afe4-5ca8-2d56-2d6c3a9ed408                |
++--------+----------------------------------------------------------------------+
+0 NvSwitches found.
++-----------+
+| Switch ID |
++-----------+
++-----------+
+0 ConnectX found.
++----------+
+| ConnectX |
++----------+
++----------+
+0 CPUs found.
++--------+----------------------------------------------------------------------+
+| CPU ID | Device Information                                                   |
++--------+----------------------------------------------------------------------+
++--------+----------------------------------------------------------------------+
+
+### dcgmi profile -l -i 0 (profiling metric groups)
+### at 2026-10-31T02:04:05.260198121Z
++----------------+----------+------------------------------------------------------+
+| Group.Subgroup | Field ID | Field Tag                                            |
++----------------+----------+------------------------------------------------------+
+| A.1            | 1002     | sm_active                                            |
+| A.1            | 1003     | sm_occupancy                                         |
+| A.1            | 1004     | tensor_active                                        |
+| A.1            | 1007     | fp32_active                                          |
+| A.3            | 1008     | fp16_active                                          |
+| B.0            | 1005     | dram_active                                          |
+| C.0            | 1009     | pcie_tx_bytes                                        |
+| C.0            | 1010     | pcie_rx_bytes                                        |
+| D.0            | 1001     | gr_engine_active                                     |
++----------------+----------+------------------------------------------------------+
+
+### uname -a; /etc/os-release
+### at 2026-10-31T02:04:05.312351271Z
+Linux ip-172-31-47-72 7.0.0-1014-aws #14-Ubuntu SMP PREEMPT Thu Sep 17 19:08:36 UTC 2026 x86_64 GNU/Linux
+NAME="Ubuntu"
+VERSION="26.04.1 LTS (Resolute Raccoon)"
