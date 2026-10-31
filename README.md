@@ -76,7 +76,7 @@ tach report --format md runs/*.summary.json
 
 ## MIG
 
-`--entities i:0,i:1` (passed to `dcgmi -i`) measures MIG instances. DCGM attributes profiling fields per instance; energy and PCIe stay whole-GPU only, because DCGM has no per-instance counters for them.
+`--entities i:0,i:1` (passed to `dcgmi -i`; DCGM also accepts `instance:1` and `0/*` for all instances on GPU 0) measures MIG instances. DCGM attributes profiling fields per instance, so each `GPU-I` entity has its own `sm_active` (busy fraction) and `tensor_active`. Per instance, `gpu_util_pct` is N/A and `power_w` is the whole GPU's power repeated. Energy and PCIe are whole-GPU only: with instance-only entities tach reads the energy counter of the parent GPU(s), found with `dcgmi discovery -c`, once per GPU, and says so in `energy_note`.
 
 ## Instance type and PCIe line rate
 

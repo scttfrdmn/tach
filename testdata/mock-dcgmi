@@ -15,12 +15,23 @@ if [ "${MOCK_FAIL:-0}" = "1" ]; then
   echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
   exit 235  # dcgmi 4.7's status with nv-hostengine stopped (g6e.xlarge)
 fi
+if [ "$1" = "discovery" ] && [ "${2:-}" = "-c" ]; then
+  # Layout as dcgmi 4.7 printed it on g7e.2xlarge (testdata/real/*-mig-*-dcgmi.txt).
+  echo "| GPU 0             | GPU GPU-00000000-0000-0000-0000-000000000000 (EntityID: 0)         |"
+  if [ "${MOCK_MIG:-0}" = "1" ]; then
+    echo "| -> I 0/1          | GPU Instance (EntityID: 0)                                         |"
+    echo "|    -> CI 0/1/0    | Compute Instance (EntityID: 0)                                     |"
+    echo "| -> I 0/2          | GPU Instance (EntityID: 1)                                         |"
+    echo "|    -> CI 0/2/0    | Compute Instance (EntityID: 1)                                     |"
+  fi
+  exit 0
+fi
 [ "$1" = "dmon" ] || { echo "mock dcgmi: only dmon" >&2; exit 1; }
 shift
-ids=""; ms=1000; count=0
+ids=""; ms=1000; count=0; ent=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    -e) ids="$2"; shift 2;; -d) ms="$2"; shift 2;; -c) count="$2"; shift 2;; -i) shift 2;; *) shift;;
+    -e) ids="$2"; shift 2;; -d) ms="$2"; shift 2;; -c) count="$2"; shift 2;; -i) ent="$2"; shift 2;; *) shift;;
   esac
 done
 if [ "${MOCK_FAIL_STREAM:-0}" = "1" ] && [ "$count" -eq 0 ]; then
@@ -82,13 +93,19 @@ echo "$hdr"
 echo "$ids_line"
 n=0
 while :; do
-  ents=("GPU 0")
-  [ "${MOCK_MIG:-0}" = "1" ] && ents+=("GPU-I 0" "GPU-I 1")
+  # Like real dcgmi: -i with MIG instances (i:N, instance:N, G/*) gives only
+  # GPU-I rows; no -i gives every GPU and, in MIG mode, every instance.
+  case "$ent" in
+    *i:*|*instance:*|*/*) ents=("GPU-I 0" "GPU-I 1");;
+    "") ents=("GPU 0"); [ "${MOCK_MIG:-0}" = "1" ] && ents+=("GPU-I 0" "GPU-I 1");;
+    *) ents=("GPU 0");;
+  esac
   for e in "${ents[@]}"; do
     line=$(printf '%-16s' "$e")
     for i in "${F[@]}"; do
       w=$(width "$i")
-      if [ "$i" = 156 ] && [ "${e%% *}" != "GPU" ]; then v=N/A
+      # GPU-I rows repeat the whole GPU's energy counter, as on real MIG.
+      if [ "$i" = 156 ] && [ "${e%% *}" != "GPU" ]; then v=$(cat "${MOCK_ENERGY:-/tmp/mock_energy}" 2>/dev/null || echo 1000000)
       # Real DCGM prints N/A for profiling fields in the first row after
       # the watch is created.
       elif [ "$n" -eq 0 ] && [ "$i" -ge 1001 ] && [ "$i" -le 1012 ]; then v=N/A
