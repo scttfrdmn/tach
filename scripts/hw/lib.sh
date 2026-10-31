@@ -57,16 +57,25 @@ timestamp() {
 	done
 }
 
-# scrub_file replaces 12-digit runs (AWS account numbers) with <acct> in place.
-# The run must not be part of a longer digit string, so 13+ digit values
-# (none expected) are left alone rather than mangled.
+# scrub_file replaces AWS account IDs with <acct> in place, in the contexts
+# where they appear: ARNs, ECR registry hosts and "account" keys. It does not
+# touch other 12-digit numbers: a blanket match corrupted measurements (PCIe
+# rates in B/s, long float fractions in summary JSON) on the first g7e run.
+# Remaining standalone 12-digit runs are reported for a manual check.
 scrub_file() {
 	local f="$1" tmp
 	[[ -f "$f" ]] || return 0
 	tmp="$(mktemp)"
-	sed -E 's/(^|[^0-9])[0-9]{12}([^0-9]|$)/\1<acct>\2/g; s/(^|[^0-9])[0-9]{12}([^0-9]|$)/\1<acct>\2/g' "$f" >"$tmp"
+	sed -E \
+		-e 's/(arn:aws[a-z-]*:[a-z0-9-]*:[a-z0-9-]*:)[0-9]{12}/\1<acct>/g' \
+		-e 's/(^|[^0-9])[0-9]{12}(\.dkr\.ecr\.)/\1<acct>\2/g' \
+		-e 's/([Aa]ccount[_ -]?[Ii]d"?[[:space:]]*[:=][[:space:]]*"?)[0-9]{12}/\1<acct>/g' \
+		"$f" >"$tmp"
 	cat "$tmp" >"$f"
 	rm -f "$tmp"
+	if grep -qE '(^|[^0-9.])[0-9]{12}([^0-9.]|$)' "$f"; then
+		echo "scrub: check $f by hand: it has a standalone 12-digit number" >&2
+	fi
 }
 
 # scrub_all scrubs every file matching the given paths.
