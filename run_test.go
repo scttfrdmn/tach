@@ -237,8 +237,8 @@ func TestRunStarvedPCIe(t *testing.T) {
 	if s.IntervalMs != 1000 {
 		t.Fatalf("--pcie must raise the interval to 1s, got %dms", s.IntervalMs)
 	}
-	if s.InstanceType != "g7e.4xlarge" || s.PCIeLineRateGBs != 63 {
-		t.Fatalf("instance %q line rate %v", s.InstanceType, s.PCIeLineRateGBs)
+	if s.InstanceType != "g7e.4xlarge" || s.PCIeLineRateGBs != 63 || s.PCIeLink != "gen5 x16" || s.PCIeLineRateSource != "dcgm-link" {
+		t.Fatalf("instance %q line rate %v link %q source %q", s.InstanceType, s.PCIeLineRateGBs, s.PCIeLink, s.PCIeLineRateSource)
 	}
 	if !strings.Contains(strings.Join(r.header, ","), "tensor_hmma_active,pcie_tx_bps,pcie_rx_bps,power_w") {
 		t.Fatalf("header %v", r.header)
@@ -249,6 +249,42 @@ func TestRunStarvedPCIe(t *testing.T) {
 	// p95 4.1e10 B/s is 65% of 63 GB/s.
 	if !hasCode(s, "starved") || !hasCode(s, "pcie_bound") {
 		t.Fatalf("findings %+v", s.Findings)
+	}
+}
+
+// TestRunPCIeLineRateSource covers the line-rate order (#47): the flag, then
+// the link DCGM reports (max gen x current width), then the instance table.
+func TestRunPCIeLineRateSource(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name   string
+		env    []string
+		args   []string
+		rate   float64
+		link   string
+		source string
+	}{
+		// The L40S on g6e.xlarge: Gen4 x8, not the family's Gen4 x16.
+		{"g6e.xlarge link", []string{"MOCK_PCIE_LINK=4,8"}, []string{"--instance", "g6e.xlarge"}, 15.75, "gen4 x8", "dcgm-link"},
+		{"flag", []string{"MOCK_PCIE_LINK=4,8"}, []string{"--pcie-linerate", "20"}, 20, "", "flag"},
+		{"link N/A", []string{"MOCK_PCIE_LINK=na"}, []string{"--instance", "g6e.xlarge"}, 31.5, "", "instance-table"},
+		{"link unsupported", []string{"MOCK_UNSUPPORTED=235"}, []string{"--instance", "g4dn.xlarge"}, 15.75, "", "instance-table"},
+		// MIG instances only: the link is read from the parent GPU.
+		{"MIG instances", []string{"MOCK_MIG=1", "MOCK_PCIE_LINK=4,8"}, []string{"--entities", "i:0,i:1"}, 15.75, "gen4 x8", "dcgm-link"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+			args := append(append([]string{"--pcie"}, c.args...), "--", "true")
+			s := runTach(t, c.env, args...).sum
+			if s.PCIeLineRateGBs != c.rate || s.PCIeLink != c.link || s.PCIeLineRateSource != c.source {
+				t.Fatalf("line rate %v link %q source %q, want %v %q %q", s.PCIeLineRateGBs, s.PCIeLink, s.PCIeLineRateSource, c.rate, c.link, c.source)
+			}
+		})
+	}
+	// Without --pcie there is no line rate to record.
+	if s := runTach(t, nil, "--", "true").sum; s.PCIeLineRateGBs != 0 || s.PCIeLink != "" || s.PCIeLineRateSource != "" {
+		t.Fatalf("no --pcie: line rate %v link %q source %q", s.PCIeLineRateGBs, s.PCIeLink, s.PCIeLineRateSource)
 	}
 }
 

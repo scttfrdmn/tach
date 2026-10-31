@@ -205,8 +205,45 @@ func TestPrimaryEntitiesPrefersWholeGPUs(t *testing.T) {
 }
 
 func TestInferLineRate(t *testing.T) {
-	if inferLineRate("g6e.2xlarge") != 31.5 || inferLineRate("g7e.4xlarge") != 63 || inferLineRate("") != 63 {
-		t.Fatal("line rate inference")
+	for inst, want := range map[string]float64{
+		"g4dn.xlarge": 15.75, "g5g.xlarge": 15.75, // T4/T4G: Gen3 x16
+		"g6e.2xlarge": 31.5, "g7e.4xlarge": 63, "": 63,
+	} {
+		if got := inferLineRate(inst); got != want {
+			t.Errorf("%q: %v, want %v", inst, got, want)
+		}
+	}
+}
+
+func TestPCIeLinkRate(t *testing.T) {
+	for _, c := range []struct {
+		l    pcieLink
+		want float64
+		s    string
+	}{
+		{pcieLink{5, 16}, 63, "gen5 x16"},
+		{pcieLink{4, 8}, 15.75, "gen4 x8"},
+		{pcieLink{3, 16}, 15.75, "gen3 x16"},
+		{pcieLink{6, 16}, 121, "gen6 x16"},
+		{pcieLink{7, 16}, 0, "gen7 x16"},
+	} {
+		if c.l.GBs() != c.want || c.l.String() != c.s {
+			t.Errorf("%+v: %v %q, want %v %q", c.l, c.l.GBs(), c.l.String(), c.want, c.s)
+		}
+	}
+	// Several GPUs: the slowest valid link; N/A rows and MIG rows are skipped.
+	nan := math.NaN()
+	rows := []row{
+		{EntType: "GPU", EntID: "0", Vals: []float64{5, 16}},
+		{EntType: "GPU", EntID: "1", Vals: []float64{4, 8}},
+		{EntType: "GPU", EntID: "2", Vals: []float64{nan, nan}},
+		{EntType: "GPU-I", EntID: "0", Vals: []float64{1, 1}},
+	}
+	if l, saw := slowestLink(rows); !saw || l != (pcieLink{4, 8}) {
+		t.Fatalf("slowest %+v (saw GPU %v)", l, saw)
+	}
+	if l, saw := slowestLink(rows[2:]); !saw || l.Gen != 0 {
+		t.Fatalf("N/A only: %+v", l)
 	}
 }
 

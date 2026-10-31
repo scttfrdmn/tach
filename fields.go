@@ -32,6 +32,12 @@ var (
 	fHMMA        = field{1014, "tensor_hmma_active", "ratio", true}
 	fPCIeTX      = field{1009, "pcie_tx_bps", "B/s", true}
 	fPCIeRX      = field{1010, "pcie_rx_bps", "B/s", true}
+
+	// The negotiated PCIe link, read once per --pcie run for the line rate
+	// (#47). Not 237, the current gen: it idles down (Gen1 on an idle RTX PRO
+	// 6000) while the width holds, so max gen with current width is the link.
+	fPCIeMaxGen = field{235, "pcie_max_link_gen", "", false}
+	fPCIeWidth  = field{238, "pcie_link_width", "lanes", false}
 )
 
 // deviceFields are appended to every profile. They are NVML-backed and work
