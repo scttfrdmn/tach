@@ -62,7 +62,8 @@ type EntitySummary struct {
 	Fields  map[string]stat `json:"fields"`
 
 	// BusyFraction is the share of samples with sm_active at or above
-	// thStarved; BusyFields are the field stats over just those samples.
+	// thHasWork (the GPU had work); BusyFields are the field stats over just
+	// those samples.
 	// Pipe and precision findings are judged on the busy samples, so a job
 	// that spends most of its time loading or staging is still read for
 	// what it does on the GPU (#55). Absent without sm_active.
@@ -206,7 +207,12 @@ func (s *Summary) peakMemory() (used, total float64, ok bool) {
 // Thresholds for the heuristic findings. They are deliberately coarse; the
 // CSV is the ground truth.
 const (
-	thStarved      = 0.30 // sm_active mean below this: GPU mostly idle
+	thStarved = 0.30 // sm_active mean below this: GPU mostly idle
+	// A sample "has work" at or above this sm_active. Idle phases (loading,
+	// staging) read ~0; GROMACS on an RTX 5090 runs at ~0.3 throughout
+	// (#63), so the cut must sit well below thStarved.
+	thHasWork      = 0.05
+	thMostlyWork   = 0.80 // share of samples with work above which starved means low intensity, not idle
 	thBusy         = 0.50
 	thLowOcc       = 0.25
 	thMemBoundDRAM = 0.50
@@ -253,12 +259,24 @@ func (s *Summary) analyze() {
 	}
 
 	if okSM && runSM < thStarved {
-		busy := ""
-		if f, ok := s.busyFraction(); ok && f > 0 {
-			busy = fmt.Sprintf(" It was busy in %.0f%% of samples; the other findings describe those.", 100*f)
+		// Three different answers: transfers saturate PCIe (waiting on
+		// copies); the GPU has work nearly all the time at low SM activity
+		// (too big for the problem, or launch/CPU-bound); or long idle phases
+		// (waiting on data).
+		tx, okTx := s.pcieUtil()
+		pcieBound := okTx && tx >= thPCIeHigh
+		if f, ok := s.busyFraction(); pcieBound {
+			add("starved", "SM active averaged %.2f while PCIe was busy: the GPU waits on host-device transfers. Keep data on the GPU, overlap copies with compute, or use pinned memory before changing hardware.", runSM)
+		} else if ok && f >= thMostlyWork {
+			add("starved", "SM active averaged %.2f although the GPU had work in %.0f%% of samples: kernels too small for this GPU, or it waits on the host between them (CPU- or launch-bound). A smaller GPU, or several jobs per GPU (MPS/MIG), would use it better.", runSM, 100*f)
+		} else {
+			idle := ""
+			if ok {
+				idle = fmt.Sprintf(" It was idle in %.0f%% of samples; the other findings describe the rest.", 100*(1-f))
+			}
+			add("starved", "SM active averaged %.2f: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.%s", runSM, idle)
 		}
-		add("starved", "SM active averaged %.2f: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.%s", runSM, busy)
-		if tx, ok := s.pcieUtil(); ok && tx >= thPCIeHigh {
+		if pcieBound {
 			add("pcie_bound", "PCIe reached %.0f%% of line rate (p95) while SMs were idle: likely input-bound or host round-trips.", tx*100)
 		}
 	}
@@ -384,7 +402,7 @@ func (s *Summary) verdict() string {
 }
 
 // busyStats returns the share of samples whose sm_active (field index smi) is
-// at or above thStarved, and per-field stats over those samples only. Samples
+// at or above thHasWork, and per-field stats over those samples only. Samples
 // with sm_active missing count toward neither side.
 func busyStats(fields []field, sr *series, smi int) (*float64, map[string]stat) {
 	var busy []int
@@ -394,7 +412,7 @@ func busyStats(fields []field, sr *series, smi int) (*float64, map[string]stat) 
 			continue
 		}
 		measured++
-		if v >= thStarved {
+		if v >= thHasWork {
 			busy = append(busy, j)
 		}
 	}

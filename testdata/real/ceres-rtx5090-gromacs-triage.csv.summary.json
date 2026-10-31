@@ -1,0 +1,328 @@
+{
+  "tach_version": "0.1.0",
+  "label": "rtx5090-gromacs-triage",
+  "profile": "triage",
+  "command": [
+    "gmx",
+    "mdrun",
+    "-s",
+    "benchMEM.tpr",
+    "-deffnm",
+    "bench-triage",
+    "-nsteps",
+    "250000",
+    "-resethway",
+    "-noconfout",
+    "-nb",
+    "gpu",
+    "-pme",
+    "gpu",
+    "-bonded",
+    "gpu",
+    "-ntmpi",
+    "1",
+    "-ntomp",
+    "16",
+    "-pin",
+    "on"
+  ],
+  "exit_code": 0,
+  "start": "2026-10-31T04:45:36Z",
+  "wall_seconds": 96.665975154,
+  "interval_ms": 1000,
+  "dcp": true,
+  "hostname": "ceres",
+  "csv": "/home/scttfrdmn/tach-val/real-gmx/ceres-rtx5090-gromacs-triage.csv",
+  "entities": [
+    {
+      "type": "GPU",
+      "id": "0",
+      "samples": 98,
+      "fields": {
+        "dram_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0.001835051546391754,
+          "p50": 0.002,
+          "p95": 0.002,
+          "min": 0,
+          "max": 0.002
+        },
+        "fb_total_mib": {
+          "n": 98,
+          "missing": 0,
+          "mean": 32607,
+          "p50": 32607,
+          "p95": 32607,
+          "min": 32607,
+          "max": 32607
+        },
+        "fb_used_mib": {
+          "n": 98,
+          "missing": 0,
+          "mean": 552.8367346938776,
+          "p50": 565,
+          "p95": 565,
+          "min": 3,
+          "max": 565
+        },
+        "fp32_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0.062051546391752664,
+          "p50": 0.067,
+          "p95": 0.067,
+          "min": 0,
+          "max": 0.068
+        },
+        "fp64_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 98,
+          "missing": 0,
+          "mean": 59.63265306122449,
+          "p50": 61,
+          "p95": 62,
+          "min": 45,
+          "max": 62
+        },
+        "gpu_util_pct": {
+          "n": 98,
+          "missing": 0,
+          "mean": 49.724489795918366,
+          "p50": 54,
+          "p95": 55,
+          "min": 0,
+          "max": 55
+        },
+        "power_w": {
+          "n": 98,
+          "missing": 0,
+          "mean": 294.9941938775511,
+          "p50": 317.4325,
+          "p95": 319.5173,
+          "min": 5.373,
+          "max": 320.606
+        },
+        "sm_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0.29408247422680445,
+          "p50": 0.318,
+          "p95": 0.318,
+          "min": 0,
+          "max": 0.319
+        },
+        "sm_clock_mhz": {
+          "n": 98,
+          "missing": 0,
+          "mean": 2833.418367346939,
+          "p50": 2865,
+          "p95": 2872,
+          "min": 225,
+          "max": 2970
+        },
+        "sm_occupancy": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0.14056701030927812,
+          "p50": 0.152,
+          "p95": 0.152,
+          "min": 0,
+          "max": 0.153
+        },
+        "tensor_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 97,
+          "missing": 1,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      },
+      "busy_fraction": 0.8969072164948454,
+      "busy_fields": {
+        "dram_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0.0020000000000000013,
+          "p50": 0.002,
+          "p95": 0.002,
+          "min": 0.002,
+          "max": 0.002
+        },
+        "fb_total_mib": {
+          "n": 87,
+          "missing": 0,
+          "mean": 32607,
+          "p50": 32607,
+          "p95": 32607,
+          "min": 32607,
+          "max": 32607
+        },
+        "fb_used_mib": {
+          "n": 87,
+          "missing": 0,
+          "mean": 564.9080459770115,
+          "p50": 565,
+          "p95": 565,
+          "min": 563,
+          "max": 565
+        },
+        "fp32_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0.06701149425287366,
+          "p50": 0.067,
+          "p95": 0.067,
+          "min": 0.067,
+          "max": 0.068
+        },
+        "fp64_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "gpu_temp_c": {
+          "n": 87,
+          "missing": 0,
+          "mean": 60.81609195402299,
+          "p50": 61,
+          "p95": 62,
+          "min": 56,
+          "max": 62
+        },
+        "gpu_util_pct": {
+          "n": 87,
+          "missing": 0,
+          "mean": 54.35632183908046,
+          "p50": 54,
+          "p95": 55,
+          "min": 54,
+          "max": 55
+        },
+        "power_w": {
+          "n": 87,
+          "missing": 0,
+          "mean": 315.4456781609196,
+          "p50": 317.674,
+          "p95": 319.5514,
+          "min": 253.464,
+          "max": 320.606
+        },
+        "sm_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0.3179885057471267,
+          "p50": 0.318,
+          "p95": 0.318,
+          "min": 0.317,
+          "max": 0.319
+        },
+        "sm_clock_mhz": {
+          "n": 87,
+          "missing": 0,
+          "mean": 2865.4827586206898,
+          "p50": 2865,
+          "p95": 2872,
+          "min": 2865,
+          "max": 2872
+        },
+        "sm_occupancy": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0.15201149425287333,
+          "p50": 0.152,
+          "p95": 0.152,
+          "min": 0.152,
+          "max": 0.153
+        },
+        "tensor_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_hmma_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "tensor_imma_active": {
+          "n": 87,
+          "missing": 0,
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        }
+      }
+    }
+  ],
+  "energy_joules": 28955.458,
+  "energy_method": "counter",
+  "energy_note": "whole-GPU energy counter delta; includes any other work on these GPUs",
+  "work": 0.5,
+  "unit": "ns",
+  "per_unit": {
+    "seconds": 193.331950308,
+    "joules": 57910.916
+  },
+  "findings": [
+    {
+      "code": "starved",
+      "text": "SM active averaged 0.29: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware. It was busy in 90% of samples; the other findings describe those."
+    },
+    {
+      "code": "fp64_unused",
+      "text": "FP64 active 0.000: the code does not need an FP64-class GPU."
+    },
+    {
+      "code": "tensor_idle",
+      "text": "Tensor pipe active 0.000 while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32."
+    },
+    {
+      "code": "memory_headroom",
+      "text": "Peak memory 0.6 GiB of 31.8 GiB (2%): a smaller GPU or a MIG slice would fit."
+    }
+  ],
+  "verdict": "underutilized; tensor cores idle; oversized memory"
+}

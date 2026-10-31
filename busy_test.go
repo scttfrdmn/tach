@@ -96,10 +96,11 @@ func TestBusyPhaseFromRealRun(t *testing.T) {
 	if strings.Contains(got, ",fp64_unused,") {
 		t.Errorf("fp64_unused on an FP64 code: %s", got)
 	}
-	if !strings.Contains(s.Findings[0].Text, "busy in") {
-		t.Errorf("starved text does not give the busy share: %q", s.Findings[0].Text)
+	if !strings.Contains(s.Findings[0].Text, "idle in") {
+		t.Errorf("starved text does not give the idle share: %q", s.Findings[0].Text)
 	}
-	if sm := s.Entities[0].BusyFields["sm_active"].Mean; sm < 0.95 {
+	// The work samples include the ramp into the GEMM, hence 0.90 not 0.99.
+	if sm := s.Entities[0].BusyFields["sm_active"].Mean; sm < 0.90 {
 		t.Errorf("busy-phase sm_active %v", sm)
 	}
 }
@@ -130,5 +131,25 @@ func TestFindingsOnRealRuns(t *testing.T) {
 				t.Errorf("%s: unexpected %s in %s", c.csv, w, got)
 			}
 		}
+	}
+}
+
+// TestStarvedKinds: GROMACS benchMEM on an RTX 5090 has work in nearly every
+// sample at sm_active ~0.3 (#63); the g7e FP64 run idles through a cold
+// `import torch` first (#55). Both are starved, for different reasons.
+func TestStarvedKinds(t *testing.T) {
+	g := replaySummary(t, "ceres-rtx5090-gromacs-hpc.csv", "hpc")
+	if f, _ := g.busyFraction(); f < 0.9 {
+		t.Fatalf("GROMACS busy fraction %v", f)
+	}
+	if !hasCode(g, "starved") || !strings.Contains(g.Findings[0].Text, "kernels too small") || hasCode(g, "fp64_unmeasured") {
+		t.Fatalf("GROMACS: %s / %q", codes(g), g.Findings[0].Text)
+	}
+	if !hasCode(g, "fp64_unused") {
+		t.Fatalf("GROMACS is mixed precision; want fp64_unused, got %s", codes(g))
+	}
+	d := replaySummary(t, "g7e.2xlarge-v2-matmul-fp64.csv", "triage")
+	if !strings.Contains(d.Findings[0].Text, "idle in") || strings.Contains(d.Findings[0].Text, "kernels too small") {
+		t.Fatalf("diluted FP64 run: %q", d.Findings[0].Text)
 	}
 }
