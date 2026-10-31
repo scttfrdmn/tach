@@ -49,6 +49,31 @@ ensure_hostengine() {
 	}
 }
 
+# supported_fields <comma-list> probes each DCGM field on its own with
+# "$DCGMI" dmon -e <id> -c 1 and echoes the comma-joined list of fields that
+# produced a row (a line starting "GPU", whatever its value, N/A included).
+# The dropped fields go to stderr. One unsupported field makes DCGM reject
+# the whole dmon ("Error setting watches. Result: -6: Feature not supported",
+# fp64_active 1006 on an L40S), so a capture must not request it.
+supported_fields() {
+	local id probe keep="" drop=""
+	local -a ids
+	IFS=, read -ra ids <<<"$1"
+	for id in "${ids[@]}"; do
+		[[ -n "$id" ]] || continue
+		probe="$("${DCGMI:-dcgmi}" dmon -e "$id" -c 1 2>&1 || true)"
+		if grep -q '^GPU' <<<"$probe"; then
+			keep="${keep:+$keep,}$id"
+		else
+			drop="${drop:+$drop,}$id"
+		fi
+	done
+	if [[ -n "$drop" ]]; then
+		echo "supported_fields: dropped $drop (no GPU row from dmon -e <id> -c 1)" >&2
+	fi
+	printf '%s\n' "$keep"
+}
+
 # timestamp prefixes each input line with its arrival time (Unix epoch, ns).
 timestamp() {
 	local l
