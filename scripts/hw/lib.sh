@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
+#
+# Shared helpers for scripts/hw (sourced by capture.sh and run-all.sh).
+set -euo pipefail
+
+# instance_type prints the EC2 instance type from IMDSv2, or "unknown".
+instance_type() {
+	local tok it
+	tok="$(curl -sf --max-time 2 -X PUT http://169.254.169.254/latest/api/token \
+		-H 'X-aws-ec2-metadata-token-ttl-seconds: 60' 2>/dev/null || true)"
+	if [[ -n "$tok" ]]; then
+		it="$(curl -sf --max-time 2 -H "X-aws-ec2-metadata-token: $tok" \
+			http://169.254.169.254/latest/meta-data/instance-type 2>/dev/null || true)"
+	fi
+	if [[ -n "${it:-}" && "$it" =~ ^[a-z0-9.-]+$ ]]; then
+		printf '%s\n' "$it"
+	else
+		printf 'unknown\n'
+	fi
+}
+
+# as_root runs a command as root (directly when already root, else via sudo).
+as_root() {
+	if [[ "$(id -u)" -eq 0 ]]; then
+		"$@"
+	else
+		sudo "$@"
+	fi
+}
+
+# ensure_hostengine starts nv-hostengine as root if it is not running.
+ensure_hostengine() {
+	if pgrep -x nv-hostengine >/dev/null 2>&1; then
+		echo "nv-hostengine: running (pid $(pgrep -x nv-hostengine | tr '\n' ' '))"
+		return 0
+	fi
+	echo "nv-hostengine: not running; starting as root"
+	if systemctl list-unit-files nvidia-dcgm.service >/dev/null 2>&1 &&
+		systemctl list-unit-files nvidia-dcgm.service | grep -q nvidia-dcgm; then
+		as_root systemctl start nvidia-dcgm || as_root nv-hostengine
+	else
+		as_root nv-hostengine
+	fi
+	sleep 2
+	pgrep -x nv-hostengine >/dev/null 2>&1 || {
+		echo "nv-hostengine: failed to start" >&2
+		return 1
+	}
+}
+
+# timestamp prefixes each input line with its arrival time (Unix epoch, ns).
+timestamp() {
+	local l
+	while IFS= read -r l; do
+		printf '%s %s\n' "$(date +%s.%N)" "$l"
+	done
+}
+
+# scrub_file replaces 12-digit runs (AWS account numbers) with <acct> in place.
+# The run must not be part of a longer digit string, so 13+ digit values
+# (none expected) are left alone rather than mangled.
+scrub_file() {
+	local f="$1" tmp
+	[[ -f "$f" ]] || return 0
+	tmp="$(mktemp)"
+	sed -E 's/(^|[^0-9])[0-9]{12}([^0-9]|$)/\1<acct>\2/g; s/(^|[^0-9])[0-9]{12}([^0-9]|$)/\1<acct>\2/g' "$f" >"$tmp"
+	cat "$tmp" >"$f"
+	rm -f "$tmp"
+}
+
+# scrub_all scrubs every file matching the given paths.
+scrub_all() {
+	local f
+	for f in "$@"; do
+		scrub_file "$f"
+	done
+}
