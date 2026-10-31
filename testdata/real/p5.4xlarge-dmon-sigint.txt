@@ -1,0 +1,17 @@
+
+### SIGINT test: dcgmi dmon -e 1002,1003,1004,1005,1006,250,252,155,156 -d 1000 (streaming) | timestamper; kill -INT after 3.5 s
+### at 2026-10-31T02:40:23.425785887Z
+start=1793414419.285624844 sigint=1793414422.793110812 exited=1793414423.422123654
+exit_status=0 (130 = killed by SIGINT without a handler; 0 = clean exit)
+escalated=no
+data_rows_before_sigint=4 data_rows_after_sigint=0
+--- raw (column 1: arrival, Unix s)
+1793414419.306762558 #Entity         SMACT        SMOCC        TENSO        DRAMA        FP64A        FBTTL             FBUSD             POWER             TOTEC                   
+1793414419.310320160 ID                                                                                                                    W                 mJ                     
+1793414419.314580964 GPU 0           0.000        0.000        0.000        0.000        0.000        81559             0                 117.025           43786961                
+1793414420.317469352 GPU 0           0.000        0.000        0.000        0.000        0.000        81559             0                 117.032           43786961                
+1793414421.318300245 GPU 0           0.000        0.000        0.000        0.000        0.000        81559             0                 117.046           43903950                
+1793414422.320011192 GPU 0           0.000        0.000        0.000        0.000        0.000        81559             0                 117.044           44020928                
+1793414423.319278898 
+1793414423.322814559 
+1793414423.326347110 dmon was stopped due to receiving a signal

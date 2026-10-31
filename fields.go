@@ -28,6 +28,8 @@ var (
 	fFP64        = field{1006, "fp64_active", "ratio", true}
 	fFP32        = field{1007, "fp32_active", "ratio", true}
 	fFP16        = field{1008, "fp16_active", "ratio", true}
+	fIMMA        = field{1013, "tensor_imma_active", "ratio", true}
+	fHMMA        = field{1014, "tensor_hmma_active", "ratio", true}
 	fPCIeTX      = field{1009, "pcie_tx_bps", "B/s", true}
 	fPCIeRX      = field{1010, "pcie_rx_bps", "B/s", true}
 )
@@ -55,8 +57,11 @@ const energyFieldID = 156
 //	hpc       — compute vs memory for FP-heavy simulation codes.
 //	inference — are the tensor cores being fed.
 var profiles = map[string][]field{
-	"triage":    {fSMActive, fSMOccupancy, fTensor, fDRAM, fFP64},
-	"hpc":       {fSMActive, fSMOccupancy, fDRAM, fFP64, fFP32},
+	// imma and hmma split tensor activity by precision. What neither claims
+	// is FP64 on tensor cores (DMMA): on an H100, cuBLAS DGEMM shows up only
+	// there, not in fp64_active (#11). GPUs without them drop them (#43).
+	"triage":    {fSMActive, fSMOccupancy, fTensor, fDRAM, fFP64, fFP32, fIMMA, fHMMA},
+	"hpc":       {fSMActive, fSMOccupancy, fDRAM, fFP64, fFP32, fTensor, fIMMA, fHMMA},
 	"inference": {fSMActive, fDRAM, fTensor, fFP16},
 }
 

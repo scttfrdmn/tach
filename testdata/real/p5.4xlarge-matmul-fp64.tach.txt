@@ -1,0 +1,22 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 63.3s, exit 0, p5.4xlarge
+GPU 0 (65 samples)
+  sm_active      mean 0.923328   p50 0.984      p95 0.985      max 0.985
+  sm_occupancy   mean 0.114469   p50 0.122      p95 0.122      max 0.122
+  tensor_active  mean 0.909953   p50 0.97       p95 0.97       max 0.97
+  dram_active    mean 0.132094   p50 0.14       p95 0.14685    max 0.151
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 656.683    p50 697.832    p95 699.637    max 717.094
+  sm_clock_mhz   mean 1533.92    p50 1515       p95 1830       max 1830
+  fb_used_mib    mean 2062.22    p50 2162       p95 2162       max 2162
+  fb_total_mib   mean 81559      p50 81559      p95 81559      max 81559
+  gpu_util_pct   mean 92.3077    p50 100        p95 100        max 100
+  gpu_temp_c     mean 76.0923    p50 78         p95 79         max 79
+energy: 42686.2 J (counter)
+verdict (heuristic): occupancy-limited; oversized memory
+  - SMs active (0.92) but occupancy low (0.11): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).
+  - FP64 pipe active 0.000: the code does not need an FP64-class GPU.
+  - Peak memory 2.1 GiB of 79.6 GiB (3%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/p5.4xlarge-matmul-fp64.csv.summary.json

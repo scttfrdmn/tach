@@ -1,0 +1,2 @@
+dtype=bf16 size=8192 device=cuda gpu="NVIDIA H100 80GB HBM3" torch=2.14.1+cu130 cuda=13.0 allow_tf32.matmul=False allow_tf32.cudnn=True
+dtype=bf16 size=8192 iters=109868 seconds=180.000 tflops=671.117 start=1793414577.490029 end=1793414757.490274

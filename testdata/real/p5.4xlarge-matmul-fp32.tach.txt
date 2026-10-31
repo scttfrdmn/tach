@@ -1,0 +1,23 @@
+/opt/pytorch/lib/python3.13/site-packages/torch/cuda/__init__.py:68: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+
+── tach 0.1.0-dev ── triage profile, 63.6s, exit 0, p5.4xlarge
+GPU 0 (65 samples)
+  sm_active      mean 0.908172   p50 0.967      p95 0.968      max 0.968
+  sm_occupancy   mean 0.113578   p50 0.121      p95 0.121      max 0.121
+  tensor_active  mean 0          p50 0          p95 0          max 0
+  dram_active    mean 0.0594688  p50 0.063      p95 0.064      max 0.07
+  fp64_active    mean 0          p50 0          p95 0          max 0
+  power_w        mean 643.791    p50 682.166    p95 691.687    max 692.157
+  sm_clock_mhz   mean 1830       p50 1830       p95 1830       max 1830
+  fb_used_mib    mean 1329.66    p50 1394       p95 1394       max 1394
+  fb_total_mib   mean 81559      p50 81559      p95 81559      max 81559
+  gpu_util_pct   mean 92.3538    p50 100        p95 100        max 100
+  gpu_temp_c     mean 73.9231    p50 75         p95 77.8       max 78
+energy: 41789.9 J (counter)
+verdict (heuristic): occupancy-limited; tensor cores idle; oversized memory
+  - SMs active (0.91) but occupancy low (0.11): small kernels or small batches. Larger batches, fused kernels, or several jobs per GPU (MPS/MIG).
+  - FP64 pipe active 0.000: the code does not need an FP64-class GPU.
+  - Tensor pipe active 0.000 while SMs were busy: for AI work this usually means FP32. Try BF16 autocast or TF32.
+  - Peak memory 1.4 GiB of 79.6 GiB (2%): a smaller GPU or a MIG slice would fit.
+summary: /home/scttfrdmn/real/p5.4xlarge-matmul-fp32.csv.summary.json
