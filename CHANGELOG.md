@@ -31,7 +31,9 @@ First version, not yet validated on real GPUs. Everything below was tested again
   error. If the sampler records nothing during a run, tach warns, keeps dcgmi's message in
   `notes`, and reports the `no_samples` finding with the verdict "no data".
 - **Energy** from the DCGM energy counter delta per whole GPU, falling back to integrating
-  sampled power (`energy_method: counter | power-integral | none`).
+  sampled power (`energy_method: counter | power-integral | none`). The counter is read just
+  before the command starts and just after it exits, so short runs are not inflated by tach's
+  own startup and closing sample.
 - **Heuristic findings and a verdict**: `starved`, `pcie_bound`, `low_occupancy`,
   `memory_bound`, `fp64_required`, `fp64_unused`, `fp64_unmeasured`, `tensor_idle`,
   `memory_headroom`, `no_dcp`, `no_samples`. FP64 activity includes FP64 on tensor cores
