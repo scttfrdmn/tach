@@ -271,7 +271,7 @@ func (s *Summary) analyze() {
 			add("starved", "SM active averaged %.2f although the GPU had work in %.0f%% of samples: kernels too small for this GPU, or it waits on the host between them (CPU- or launch-bound). A smaller GPU, or several jobs per GPU (MPS/MIG), would use it better.", runSM, 100*f)
 		} else {
 			idle := ""
-			if ok {
+			if ok && f > 0 {
 				idle = fmt.Sprintf(" It was idle in %.0f%% of samples; the other findings describe the rest.", 100*(1-f))
 			}
 			add("starved", "SM active averaged %.2f: the GPU was idle most of the run. Check data loading, host-side loops and host-device copies before changing hardware.%s", runSM, idle)

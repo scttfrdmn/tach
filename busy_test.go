@@ -153,3 +153,11 @@ func TestStarvedKinds(t *testing.T) {
 		t.Fatalf("diluted FP64 run: %q", d.Findings[0].Text)
 	}
 }
+
+// A wholly idle run has no "rest" for the other findings to describe.
+func TestStarvedWhollyIdleWording(t *testing.T) {
+	s := replaySummary(t, "ceres-rtx5090-idle.csv", "triage")
+	if !hasCode(s, "starved") || strings.Contains(s.Findings[0].Text, "describe the rest") {
+		t.Fatalf("%q", s.Findings[0].Text)
+	}
+}
