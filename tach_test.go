@@ -126,6 +126,14 @@ func TestAnalyze(t *testing.T) {
 		{"RTX 5090 FP64 DGEMM", "triage",
 			map[string]float64{"sm_active": 0.984, "sm_occupancy": 0.0614, "tensor_active": 0, "fp64_active": 0, "fp32_active": 0, "tensor_hmma_active": 0, "tensor_imma_active": 0},
 			[]string{"fp64_unmeasured"}, []string{"fp64_unused", "low_occupancy", "tensor_idle"}},
+		// RTX 5090 (Blackwell), torch matmul n=8192: INT8 counts as imma, FP8 as
+		// hmma, so neither is mistaken for FP64 on tensor cores.
+		{"RTX 5090 INT8 GEMM (619 TOPS)", "triage",
+			map[string]float64{"sm_active": 0.955, "sm_occupancy": 0.1, "tensor_active": 0.689, "fp64_active": 0, "fp32_active": 0, "tensor_hmma_active": 0, "tensor_imma_active": 0.689},
+			[]string{"fp64_unused"}, []string{"fp64_required", "tensor_idle", "low_occupancy"}},
+		{"RTX 5090 FP8 GEMM (589 TFLOPS)", "triage",
+			map[string]float64{"sm_active": 0.956, "sm_occupancy": 0.1, "tensor_active": 0.693, "fp64_active": 0, "fp32_active": 0, "tensor_hmma_active": 0.693, "tensor_imma_active": 0},
+			[]string{"fp64_unused"}, []string{"fp64_required", "tensor_idle", "low_occupancy"}},
 		{"RTX PRO 6000 FP64 DGEMM: no pipe sees it", "triage",
 			map[string]float64{"sm_active": 0.9588, "sm_occupancy": 0.06, "tensor_active": 0, "dram_active": 0.007, "fp64_active": 0, "fp32_active": 0, "tensor_hmma_active": 0, "tensor_imma_active": 0},
 			[]string{"fp64_unmeasured"}, []string{"fp64_unused", "tensor_idle", "low_occupancy"}},
