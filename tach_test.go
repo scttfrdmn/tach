@@ -144,6 +144,9 @@ func TestPCIeBound(t *testing.T) {
 	if !strings.Contains(codes(s), "pcie_bound") {
 		t.Fatalf("got %s", codes(s))
 	}
+	if s.Verdict != "underutilized (PCIe-bound)" {
+		t.Fatalf("verdict %q", s.Verdict)
+	}
 }
 
 func TestPerUnit(t *testing.T) {

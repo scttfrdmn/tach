@@ -161,5 +161,5 @@
       "text": "Peak memory 5.9 GiB of 45.0 GiB (13%): a smaller GPU or a MIG slice would fit."
     }
   ],
-  "verdict": "underutilized; oversized memory"
+  "verdict": "underutilized (PCIe-bound); oversized memory"
 }
