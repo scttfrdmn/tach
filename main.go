@@ -180,8 +180,6 @@ func cmdRun(argv []string) int {
 	_ = cw.Write(header)
 	cw.Flush()
 
-	energyStart, energyViaParents, energyErr := readEnergy(*dcgmiBin, *entities)
-
 	var mu sync.Mutex
 	data := map[string]*series{}
 	var t0 time.Time
@@ -221,6 +219,11 @@ func cmdRun(argv []string) int {
 	sigs := make(chan os.Signal, 4)
 	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 	exitCode := 0
+	// The energy counter is read just before the command starts and just
+	// after it exits, so its window matches wall time: reading around the
+	// probes, sampler start and closing sample added ~1-2 s, 3.4% of a 30 s
+	// idle run on an L40S (#20).
+	energyStart, energyViaParents, energyErr := readEnergy(*dcgmiBin, *entities)
 	if err := child.Start(); err != nil {
 		smp.stop()
 		fatalf("start %s: %v", cmdArgs[0], err)
@@ -250,6 +253,7 @@ func cmdRun(argv []string) int {
 		}
 	}
 	wall := time.Since(t0).Seconds()
+	energyEnd, _, err2 := readEnergy(*dcgmiBin, *entities)
 	signal.Stop(sigs)
 	close(sigs)
 
@@ -272,7 +276,6 @@ func cmdRun(argv []string) int {
 		sum.Notes = append(sum.Notes, "no samples recorded: "+why)
 	}
 
-	energyEnd, _, err2 := readEnergy(*dcgmiBin, *entities)
 	switch {
 	case energyErr == nil && err2 == nil:
 		j := 0.0

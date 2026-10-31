@@ -625,3 +625,15 @@ func TestMigParentsFromRealCapture(t *testing.T) {
 		t.Fatalf("parents %v", got)
 	}
 }
+
+// TestEnergyWindowMatchesWallTime uses a counter that advances with wall time
+// at 250.5 W. The delta must cover the command's run, not the startup probes
+// and closing sample around it (#20).
+func TestEnergyWindowMatchesWallTime(t *testing.T) {
+	t.Parallel()
+	s := runTach(t, []string{"MOCK_ENERGY_CLOCK=1"}, "--", "sleep", "2").sum
+	want := 250.5 * s.WallSeconds
+	if s.EnergyMethod != "counter" || math.Abs(s.EnergyJoules-want) > 0.15*want {
+		t.Fatalf("energy %.0f J over %.2f s wall, want %.0f J ±15%%", s.EnergyJoules, s.WallSeconds, want)
+	}
+}
