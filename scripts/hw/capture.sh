@@ -52,9 +52,11 @@ section() { printf '\n### %s\n### at %s\n' "$*" "$(date -u +%Y-%m-%dT%H:%M:%S.%N
 
 # sigdfl runs a command with SIGINT reset to the default disposition. Without
 # it, a background job of a non-interactive shell inherits SIGINT as ignored
-# and the SIGINT test would measure bash, not dcgmi.
+# and the SIGINT test would measure bash, not dcgmi. It execs, so when run as
+# `sigdfl ... &` the job's pid ($!) is the command's own pid: without the exec
+# $! was the subshell, which deferred the SIGINT, and dmon streamed forever.
 sigdfl() {
-	python3 -c 'import os, signal, sys
+	exec python3 -c 'import os, signal, sys
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 os.execvp(sys.argv[1], sys.argv[1:])' "$@"
 }
