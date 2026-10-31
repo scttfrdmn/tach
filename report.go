@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -31,7 +32,7 @@ func cmdReport(argv []string) int {
 		if err != nil {
 			fatalf("%v", err)
 		}
-		if s.Findings == nil {
+		if needsAnalysis(s) {
 			s.analyze()
 		}
 		runs = append(runs, s)
@@ -45,7 +46,7 @@ func cmdReport(argv []string) int {
 	switch *format {
 	case "csv":
 		w := csv.NewWriter(os.Stdout)
-		_ = w.WriteAll(rows)
+		_ = w.WriteAll(withFindings(rows, runs))
 	case "md":
 		writeMarkdown(os.Stdout, rows)
 		writeFindings(os.Stdout, runs)
@@ -53,6 +54,29 @@ func cmdReport(argv []string) int {
 		fatalf("unknown format %q", *format)
 	}
 	return 0
+}
+
+// needsAnalysis reports whether a summary was never analysed. analyze always
+// sets a verdict, even when it finds nothing, so an empty verdict is the
+// signal; a null versus empty findings list is only an encoding detail.
+func needsAnalysis(s *Summary) bool { return s.Verdict == "" }
+
+// withFindings appends a findings column to the report rows for CSV output:
+// each run's finding codes joined by ";". rows[i+1] belongs to runs[i].
+func withFindings(rows [][]string, runs []*Summary) [][]string {
+	out := make([][]string, len(rows))
+	for i, r := range rows {
+		cell := "findings"
+		if i > 0 {
+			codes := make([]string, len(runs[i-1].Findings))
+			for j, f := range runs[i-1].Findings {
+				codes[j] = f.Code
+			}
+			cell = strings.Join(codes, ";")
+		}
+		out[i] = append(append([]string(nil), r...), cell)
+	}
+	return out
 }
 
 // distinctUnits lists the work units of runs that have per-unit figures.
@@ -141,22 +165,32 @@ func reportRows(runs []*Summary) [][]string {
 	return rows
 }
 
+// num formats a per-unit figure with about 4 significant digits in plain
+// decimal notation, never an exponent: 0.00002, 1.235, 36, 12346.
+//
+// 0 prints blank, meaning "not measured". That is exact for joules and dollars
+// per unit: computePerUnit leaves them 0 only when energy or price is unknown,
+// since a measured value is a positive energy or price over positive work.
+// Seconds per unit is wall time over positive work and is never legitimately 0.
 func num(v float64) string {
 	if v == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%.4g", v)
+	if math.Abs(v) >= 1e4 {
+		// The integer part already has more than 4 digits; keep them all.
+		return strconv.FormatFloat(v, 'f', 0, 64)
+	}
+	r, _ := strconv.ParseFloat(strconv.FormatFloat(v, 'g', 4, 64), 64)
+	return strconv.FormatFloat(r, 'f', -1, 64)
 }
 
-func money(v float64) string {
-	if v == 0 {
-		return ""
-	}
-	return fmt.Sprintf("%.4g", v)
-}
+// money formats dollars per unit; see num.
+func money(v float64) string { return num(v) }
 
 func writeMarkdown(w io.Writer, rows [][]string) {
-	esc := func(s string) string { return strings.ReplaceAll(s, "|", `\|`) }
+	// A newline would end the table row, so cells lose them along with
+	// unescaped pipes.
+	esc := strings.NewReplacer("|", `\|`, "\r\n", " ", "\n", " ", "\r", " ").Replace
 	for i, r := range rows {
 		cells := make([]string, len(r))
 		for j, c := range r {

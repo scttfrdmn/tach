@@ -176,11 +176,22 @@ func TestNumMoney(t *testing.T) {
 		{36, "36"},
 		{0.02, "0.02"},
 		{1.23456, "1.235"},
-		{12345.6, "1.235e+04"},
+		{12345.6, "12346"},
+		{1234.56, "1235"},
+		{9999.96, "10000"},
 		{0.000123456, "0.0001235"},
+		{0.00002, "0.00002"},
+		{0.0000123456, "0.00001235"},
+		{1.5e-9, "0.0000000015"},
+		{2.5e7, "25000000"},
 		{-2.5, "-2.5"},
+		{-12345.6, "-12346"},
+		{-0.00002, "-0.00002"},
 	}
 	for _, c := range cases {
+		if got := num(c.v); strings.ContainsAny(got, "eE") {
+			t.Errorf("num(%v) = %q uses an exponent", c.v, got)
+		}
 		if got := num(c.v); got != c.want {
 			t.Errorf("num(%v) = %q, want %q", c.v, got, c.want)
 		}
@@ -195,13 +206,15 @@ func TestWriteMarkdown(t *testing.T) {
 		{"run", "verdict"},
 		{"a|b", "busy"},
 		{"", "x || y"},
+		{"two\nlines", "a\r\nb\rc|d"},
 	}
 	var b bytes.Buffer
 	writeMarkdown(&b, rows)
 	want := "| run | verdict |\n" +
 		"| --- | --- |\n" +
 		"| a\\|b | busy |\n" +
-		"|  | x \\|\\| y |\n"
+		"|  | x \\|\\| y |\n" +
+		"| two lines | a b c\\|d |\n"
 	if got := b.String(); got != want {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
 	}
@@ -334,6 +347,64 @@ func TestComputePerUnitEdges(t *testing.T) {
 		s.computePerUnit()
 		if !reflect.DeepEqual(s.PerUnit, c.want) {
 			t.Errorf("%s: got %+v, want %+v", c.name, s.PerUnit, c.want)
+		}
+	}
+}
+
+func TestWithFindings(t *testing.T) {
+	runs := []*Summary{
+		{Label: "clean", Findings: []Finding{}},
+		{Label: "nil"},
+		{Label: "two", Findings: []Finding{
+			{Code: "starved", Text: "SM active averaged 0.10."},
+			{Code: "pcie_bound", Text: "PCIe; busy."},
+		}},
+	}
+	rows := reportRows(runs)
+	got := withFindings(rows, runs)
+	if len(got) != len(rows) {
+		t.Fatalf("%d rows, want %d", len(got), len(rows))
+	}
+	want := []string{"findings", "", "", "starved;pcie_bound"}
+	for i, r := range got {
+		if len(r) != len(rows[i])+1 {
+			t.Fatalf("row %d has %d cells, want %d", i, len(r), len(rows[i])+1)
+		}
+		if !reflect.DeepEqual(r[:len(r)-1], rows[i]) {
+			t.Errorf("row %d: leading cells changed: %q vs %q", i, r[:len(r)-1], rows[i])
+		}
+		if r[len(r)-1] != want[i] {
+			t.Errorf("row %d findings = %q, want %q", i, r[len(r)-1], want[i])
+		}
+	}
+	// The markdown rows are not modified.
+	if n := len(rows[0]); n != 12 {
+		t.Errorf("reportRows header has %d cells after withFindings, want 12", n)
+	}
+}
+
+func TestNeedsAnalysis(t *testing.T) {
+	cases := []struct {
+		name string
+		s    Summary
+		want bool
+	}{
+		{"never analysed, null findings", Summary{}, true},
+		{"never analysed, empty findings", Summary{Findings: []Finding{}}, true},
+		{"analysed, nothing found, null findings", Summary{Verdict: "busy (SM active 0.90); no bottleneck flagged"}, false},
+		{"analysed, nothing found, empty findings", Summary{Verdict: "no verdict", Findings: []Finding{}}, false},
+		{"analysed with findings", Summary{Verdict: "underutilized", Findings: []Finding{{Code: "starved"}}}, false},
+	}
+	for _, c := range cases {
+		if got := needsAnalysis(&c.s); got != c.want {
+			t.Errorf("%s: needsAnalysis = %v, want %v", c.name, got, c.want)
+		}
+	}
+	// analyze always leaves a verdict, so an analysed run is never re-analysed.
+	for _, s := range []*Summary{{}, summaryWith("triage", map[string]float64{"sm_active": 0.9})} {
+		s.analyze()
+		if needsAnalysis(s) {
+			t.Errorf("after analyze, verdict %q still needs analysis", s.Verdict)
 		}
 	}
 }
