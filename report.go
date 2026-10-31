@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -35,6 +36,10 @@ func cmdReport(argv []string) int {
 		}
 		runs = append(runs, s)
 	}
+	if units := distinctUnits(runs); len(units) > 1 {
+		fatalf("runs measure different units (%s): per-unit columns and sorting would compare unlike quantities. "+
+			"Report each unit separately, or set one unit with `tach annotate --unit`.", strings.Join(units, ", "))
+	}
 	sortRuns(runs)
 	rows := reportRows(runs)
 	switch *format {
@@ -48,6 +53,22 @@ func cmdReport(argv []string) int {
 		fatalf("unknown format %q", *format)
 	}
 	return 0
+}
+
+// distinctUnits lists the work units of runs that have per-unit figures.
+func distinctUnits(runs []*Summary) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, r := range runs {
+		u := r.Unit
+		if r.PerUnit == nil || seen[u] {
+			continue
+		}
+		seen[u] = true
+		out = append(out, strconv.Quote(u))
+	}
+	sort.Strings(out)
+	return out
 }
 
 func sortRuns(runs []*Summary) {
@@ -80,9 +101,10 @@ func runName(s *Summary) string {
 }
 
 func reportRows(runs []*Summary) [][]string {
+	// The unit labels the per-unit columns, so only runs that have them count.
 	unit := ""
 	for _, r := range runs {
-		if r.Unit != "" {
+		if r.PerUnit != nil && r.Unit != "" {
 			unit = r.Unit
 			break
 		}
