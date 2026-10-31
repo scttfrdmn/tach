@@ -13,8 +13,9 @@ First version, not yet validated on real GPUs. Everything below was tested again
 ### Added
 
 - **`tach [flags] -- <command>`** wraps a command, samples DCGM through `dcgmi dmon`, and
-  passes the command's exit code through. Writes a per-sample CSV (blank cells are missing
-  samples, not zeros) and a `<csv>.summary.json` with per-entity mean/p50/p95/min/max.
+  passes the command's exit code through (128+N when the command is killed by signal N).
+  Writes a per-sample CSV (blank cells are missing samples, not zeros) and a
+  `<csv>.summary.json` with per-entity mean/p50/p95/min/max.
 - **Profiles** `triage` (default), `hpc` and `inference`, each a set of DCGM profiling fields
   plus device fields (power, SM clock, framebuffer used/total, GPU utilization, temperature).
   `--pcie` adds PCIe TX/RX (fields 1009/1010) and raises the interval to 1 s.
