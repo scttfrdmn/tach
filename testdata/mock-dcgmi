@@ -8,6 +8,8 @@
 #   MOCK_FAIL=1    behave like dcgmi with no nv-hostengine: print an error, exit 255
 #   MOCK_FAIL_STREAM=1  short queries work, a streaming dmon (no -c) fails at once
 #   MOCK_PROF_ERROR=1   a query for profiling fields (1001-1012) errors instead of printing N/A
+#   MOCK_UNSUPPORTED=1006,...  any query that includes one of these fields fails as
+#                  DCGM 4.7 does on an L40S for fp64_active
 if [ "${MOCK_FAIL:-0}" = "1" ]; then
   echo "Error: unable to establish a connection to the specified host: localhost"
   echo "Error: Unable to connect to host engine. Host engine connection invalid/disconnected."
@@ -25,6 +27,12 @@ if [ "${MOCK_FAIL_STREAM:-0}" = "1" ] && [ "$count" -eq 0 ]; then
   echo "Error: mock stream failure: host engine connection lost" >&2
   exit 1
 fi
+for u in $(echo "${MOCK_UNSUPPORTED:-}" | tr , ' '); do
+  case ",$ids," in *",$u,"*)
+    echo "Error setting watches. Result: -6: Feature not supported"
+    exit 255;;
+  esac
+done
 if [ "${MOCK_PROF_ERROR:-0}" = "1" ]; then
   case ",$ids," in *,100[0-9],*|*,101[0-2],*)
     echo "Error setting watches. Result: The requested function is not supported."

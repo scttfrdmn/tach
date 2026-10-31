@@ -34,7 +34,7 @@ Plain `go build .` also works. `make test` and `make lint` run the checks CI run
 
 Every profile adds device fields: power_w, sm_clock_mhz, fb_used_mib, fb_total_mib, gpu_util_pct, gpu_temp_c. `--pcie` adds pcie_tx_bps and pcie_rx_bps (fields 1009/1010) and raises the interval to 1 s, because PCIe counters are a separate metric group.
 
-On Ada (L4, L40S) some profiling fields cannot be sampled together; DCGM multiplexes them and some samples come back blank. Blanks are counted as missing, not as zero. Blackwell FP8/FP4 work is reported inside tensor_active; there is no separate field.
+Not every GPU supports every field. The L40S (Ada) has no `fp64_active`, and DCGM rejects a whole watch set that contains an unsupported field, so tach checks the set first, drops what the GPU does not support, warns, and lists it as `unsupported_fields` in the summary; findings that need a dropped field are skipped. Where DCGM multiplexes fields across metric groups some samples can come back blank; blanks are counted as missing, not as zero. Blackwell FP8/FP4 work is reported inside tensor_active; there is no separate field.
 
 ## Output
 

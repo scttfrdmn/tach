@@ -37,6 +37,7 @@ profile
 start
 tach_version
 unit
+unsupported_fields
 verdict
 wall_seconds
 work
